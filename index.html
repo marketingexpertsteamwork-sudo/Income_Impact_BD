@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Income Impact BD</title>
     
-    <!-- Libraries -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
@@ -21,19 +22,9 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         
         .app-header { background: var(--primary); padding: 15px 20px 25px; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; color: white; position: sticky; top: 0; z-index: 40; box-shadow: 0 4px 10px rgba(251, 192, 45, 0.3); }
-        .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 90; display: none; }
-        .drawer { position: fixed; top: 0; left: 0; height: 100%; width: 280px; background: white; z-index: 100; transform: translateX(-100%); transition: transform 0.3s ease; }
-        .drawer.open { transform: translateX(0); }
-        
-        .service-box { background: white; border-radius: 15px; padding: 10px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: transform 0.1s; }
-        .service-box:active { transform: scale(0.95); }
-        .service-img { width: 35px; height: 35px; margin-bottom: 5px; object-fit: contain; }
-        
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: white; height: 70px; display: flex; justify-content: space-between; align-items: flex-end; padding: 0 10px; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); z-index: 50; border-top-left-radius: 20px; border-top-right-radius: 20px; }
         .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-bottom: 12px; color: #bdbdbd; transition: 0.3s; }
         .nav-btn.active { color: var(--primary); }
-        .nav-btn i { font-size: 20px; margin-bottom: 4px; }
-        .nav-btn span { font-size: 10px; font-weight: 600; }
         .floating-fab { width: 55px; height: 55px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 22px; border: 4px solid white; position: absolute; left: 50%; transform: translateX(-50%); bottom: 25px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); }
     </style>
 </head>
@@ -42,32 +33,17 @@
     <!-- LOADER -->
     <div id="loader" class="fixed inset-0 bg-white z-[999] flex flex-col items-center justify-center">
         <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-yellow-500 mb-4"></div>
-        <p class="text-gray-500 text-sm font-medium">Connecting...</p>
+        <p class="text-gray-500 text-sm font-medium">Loading System...</p>
     </div>
 
-    <!-- RECAPTCHA (INVISIBLE) -->
+    <!-- RECAPTCHA -->
     <div id="recaptcha-container"></div>
-
-    <!-- DRAWER -->
-    <div id="drawer-overlay" class="drawer-overlay" onclick="toggleDrawer()"></div>
-    <div id="drawer" class="drawer flex flex-col">
-        <div class="h-40 bg-[#FBC02D] flex flex-col justify-end p-5 text-white">
-            <div class="w-16 h-16 bg-white rounded-full p-1 mb-3"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="w-full h-full rounded-full object-cover"></div>
-            <h3 class="font-bold text-lg" id="drawer-name">Guest</h3>
-            <p class="text-xs opacity-80" id="drawer-phone">...</p>
-        </div>
-        <div class="flex-1 overflow-y-auto p-4 space-y-2">
-            <a href="#" onclick="navigate('home'); toggleDrawer()" class="flex items-center gap-4 p-3 bg-gray-50 rounded-lg text-gray-700 font-medium text-sm"><i class="fas fa-home text-[#FBC02D]"></i> Home</a>
-            <a href="#" onclick="navigate('profile'); toggleDrawer()" class="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg text-gray-600 font-medium text-sm"><i class="fas fa-user-circle"></i> Profile</a>
-            <a href="#" onclick="logout()" class="flex items-center gap-4 p-3 hover:bg-red-50 text-red-500 rounded-lg font-medium text-sm"><i class="fas fa-sign-out-alt"></i> Logout</a>
-        </div>
-    </div>
 
     <!-- AUTH SCREEN -->
     <div id="auth-view" class="fixed inset-0 bg-white z-[200] flex flex-col items-center justify-center p-6 hidden">
         <div class="w-24 h-24 bg-yellow-50 rounded-full flex items-center justify-center mb-6 border-2 border-[#FBC02D]"><img src="https://cdn-icons-png.flaticon.com/512/295/295128.png" class="w-14"></div>
-        <h1 class="text-3xl font-bold text-gray-800 mb-1">Welcome</h1>
-        <p class="text-sm text-gray-500 mb-8">Login to continue earning</p>
+        <h1 class="text-3xl font-bold text-gray-800 mb-1">Income Impact</h1>
+        <p class="text-sm text-gray-500 mb-8">Login to continue</p>
 
         <!-- PHONE LOGIN -->
         <div id="phone-section" class="w-full space-y-4">
@@ -83,40 +59,81 @@
         <div id="email-section" class="w-full space-y-4 hidden">
             <input type="email" id="email-input" placeholder="Email Address" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none focus:border-[#FBC02D]">
             <input type="password" id="pass-input" placeholder="Password" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none focus:border-[#FBC02D]">
-            <button onclick="loginEmail()" class="w-full bg-[#FBC02D] text-white py-3.5 rounded-xl font-bold shadow-lg active:scale-95 transition">LOGIN / REGISTER</button>
+            <button onclick="loginEmail()" class="w-full bg-[#FBC02D] text-white py-3.5 rounded-xl font-bold shadow-lg active:scale-95 transition">LOGIN</button>
             <p class="text-center text-xs text-gray-400 cursor-pointer hover:text-[#FBC02D]" onclick="toggleAuth('phone')">Or login with Phone</p>
         </div>
     </div>
 
-    <!-- MAIN APP -->
+    <!-- MAIN APP CONTAINER -->
     <div id="app-container" class="hidden">
-        <!-- HOME -->
+        
+        <!-- ADMIN PANEL (ONLY FOR ADMINS) -->
+        <div id="view-admin" class="page-view px-4 pt-6 bg-gray-100 min-h-screen">
+            <h2 class="text-center font-bold text-xl mb-4 text-red-600">ADMIN PANEL</h2>
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="bg-white p-4 rounded-xl shadow text-center">
+                    <h3 class="text-2xl font-bold text-blue-600" id="admin-total-users">0</h3>
+                    <p class="text-xs text-gray-500">Total Users</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow text-center">
+                    <h3 class="text-2xl font-bold text-green-600">Active</h3>
+                    <p class="text-xs text-gray-500">System Status</p>
+                </div>
+            </div>
+            <h3 class="font-bold mb-2">User Management</h3>
+            <div class="bg-white p-4 rounded-xl shadow mb-4">
+                <input type="email" id="admin-user-email" placeholder="User Email" class="w-full border p-2 rounded mb-2">
+                <input type="number" id="admin-amount" placeholder="Amount" class="w-full border p-2 rounded mb-2">
+                <button onclick="adminAddBalance()" class="w-full bg-green-500 text-white py-2 rounded font-bold">Add Balance</button>
+            </div>
+            <button onclick="navigate('home')" class="w-full bg-gray-800 text-white py-3 rounded-xl mb-2">Back to User View</button>
+        </div>
+
+        <!-- LEADER PANEL (ONLY FOR LEADERS) -->
+        <div id="view-leader" class="page-view px-4 pt-6 bg-purple-50 min-h-screen">
+            <h2 class="text-center font-bold text-xl mb-4 text-purple-700">LEADER PANEL</h2>
+            <div class="bg-white p-6 rounded-xl shadow-lg mb-6 text-center">
+                <h3 class="text-3xl font-bold text-purple-600" id="leader-team-count">0</h3>
+                <p class="text-sm text-gray-500">Team Members</p>
+            </div>
+            <h3 class="font-bold mb-2">My Team</h3>
+            <div class="space-y-2" id="leader-team-list">
+                <p class="text-center text-gray-400 text-sm">No members found</p>
+            </div>
+            <button onclick="navigate('home')" class="w-full bg-gray-800 text-white py-3 rounded-xl mt-6">Back to User View</button>
+        </div>
+
+        <!-- HOME (USER) -->
         <div id="view-home" class="page-view active">
             <div class="app-header">
                 <div class="flex justify-between items-center mb-4">
                     <div class="flex items-center gap-3">
-                        <button onclick="toggleDrawer()"><i class="fas fa-bars text-xl"></i></button>
-                        <div><h2 class="font-bold text-lg leading-tight">Income App</h2><p class="text-[10px] opacity-90">Daily Earning</p></div>
+                        <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-[#FBC02D] font-bold text-xl"><i class="fas fa-user"></i></div>
+                        <div><h2 class="font-bold text-lg leading-tight" id="home-name">User</h2><p class="text-[10px] opacity-90" id="home-role">Member</p></div>
                     </div>
-                    <div class="relative"><i class="fas fa-bell text-xl"></i><span class="absolute -top-1 -right-1 bg-red-600 text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center border border-white">2</span></div>
+                    <div class="relative"><i class="fas fa-bell text-xl"></i><span class="absolute -top-1 -right-1 bg-red-600 text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center border border-white">1</span></div>
                 </div>
-                <div class="bg-white/20 rounded-lg p-2 flex items-center backdrop-blur-sm"><i class="fas fa-bullhorn text-white mr-2"></i><marquee class="text-xs font-medium">Welcome to our official earning app. Work freely!</marquee></div>
+                <div class="bg-white/20 rounded-lg p-2 flex items-center backdrop-blur-sm"><i class="fas fa-bullhorn text-white mr-2"></i><marquee class="text-xs font-medium">Welcome to Income Impact BD. Start Earning!</marquee></div>
             </div>
+            
             <div class="px-4 -mt-6 relative z-10 pb-4">
+                <!-- Admin/Leader Buttons -->
+                <div id="special-access" class="flex gap-2 mb-4 hidden">
+                    <button onclick="navigate('admin')" class="flex-1 bg-red-600 text-white py-2 rounded-lg text-xs font-bold shadow hidden" id="btn-admin">ADMIN PANEL</button>
+                    <button onclick="navigate('leader')" class="flex-1 bg-purple-600 text-white py-2 rounded-lg text-xs font-bold shadow hidden" id="btn-leader">LEADER PANEL</button>
+                </div>
+
                 <div class="flex overflow-x-auto gap-3 hide-scroll mb-5">
-                    <img src="https://via.placeholder.com/300x150/FFB300/FFFFFF?text=Bonus+Offer" class="rounded-xl w-72 shadow-md">
+                    <img src="https://via.placeholder.com/300x150/FFB300/FFFFFF?text=Premium+Bonus" class="rounded-xl w-72 shadow-md">
                     <img src="https://via.placeholder.com/300x150/1a1a1a/FFFFFF?text=Refer+Win" class="rounded-xl w-72 shadow-md">
                 </div>
+
                 <h3 class="font-bold text-gray-800 mb-3 border-l-4 border-[#FBC02D] pl-2">Services</h3>
                 <div class="grid grid-cols-4 gap-3 mb-6">
-                    <div class="service-box" onclick="showToast('Recharge coming soon')"><img src="https://cdn-icons-png.flaticon.com/512/2331/2331941.png" class="service-img"><span class="text-[10px] font-bold text-gray-600">Recharge</span></div>
-                    <div class="service-box" onclick="showToast('Drive offer loading...')"><img src="https://cdn-icons-png.flaticon.com/512/3659/3659899.png" class="service-img"><span class="text-[10px] font-bold text-gray-600">Drive</span></div>
-                    <div class="service-box" onclick="navigate('shop')"><img src="https://cdn-icons-png.flaticon.com/512/3081/3081840.png" class="service-img"><span class="text-[10px] font-bold text-gray-600">Shop</span></div>
-                    <div class="service-box" onclick="navigate('tasks')"><img src="https://cdn-icons-png.flaticon.com/512/2936/2936669.png" class="service-img"><span class="text-[10px] font-bold text-gray-600">Tasks</span></div>
-                    <div class="service-box" onclick="navigate('tasks')"><img src="https://cdn-icons-png.flaticon.com/512/1968/1968666.png" class="service-img"><span class="text-[10px] font-bold text-gray-600">Ads</span></div>
-                    <div class="service-box"><img src="https://cdn-icons-png.flaticon.com/512/1603/1603847.png" class="service-img"><span class="text-[10px] font-bold text-gray-600">Top</span></div>
-                    <div class="service-box"><img src="https://cdn-icons-png.flaticon.com/512/2910/2910793.png" class="service-img"><span class="text-[10px] font-bold text-gray-600">Typing</span></div>
-                    <div class="service-box" onclick="claimBonus()"><img src="https://cdn-icons-png.flaticon.com/512/5551/5551368.png" class="service-img"><span class="text-[10px] font-bold text-gray-600">Bonus</span></div>
+                    <div class="bg-white p-2 rounded-xl shadow-sm flex flex-col items-center justify-center" onclick="showToast('Recharge coming soon')"><i class="fas fa-mobile-alt text-blue-500 text-xl mb-1"></i><span class="text-[10px] font-bold text-gray-600">Recharge</span></div>
+                    <div class="bg-white p-2 rounded-xl shadow-sm flex flex-col items-center justify-center" onclick="navigate('tasks')"><i class="fas fa-tasks text-red-500 text-xl mb-1"></i><span class="text-[10px] font-bold text-gray-600">Tasks</span></div>
+                    <div class="bg-white p-2 rounded-xl shadow-sm flex flex-col items-center justify-center" onclick="navigate('shop')"><i class="fas fa-shopping-bag text-green-500 text-xl mb-1"></i><span class="text-[10px] font-bold text-gray-600">Shop</span></div>
+                    <div class="bg-white p-2 rounded-xl shadow-sm flex flex-col items-center justify-center" onclick="claimBonus()"><i class="fas fa-gift text-yellow-500 text-xl mb-1"></i><span class="text-[10px] font-bold text-gray-600">Bonus</span></div>
                 </div>
             </div>
         </div>
@@ -124,7 +141,6 @@
         <!-- WALLET -->
         <div id="view-wallet" class="page-view px-4 pt-6 min-h-screen bg-white">
             <h2 class="text-center font-bold text-xl mb-4">My Wallet</h2>
-            <div id="coin-container" class="mb-4 h-24 w-full flex justify-center"></div>
             <div class="bg-gray-900 rounded-2xl p-6 text-white shadow-xl mb-6 relative overflow-hidden">
                 <div class="absolute -right-5 -top-5 w-24 h-24 bg-white opacity-10 rounded-full blur-xl"></div>
                 <p class="text-sm opacity-70">Balance</p>
@@ -161,10 +177,11 @@
                 <div class="w-24 h-24 bg-white rounded-full mx-auto p-1 mb-3"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="w-full h-full rounded-full object-cover"></div>
                 <h2 class="text-xl font-bold text-white" id="profile-name">Guest</h2>
                 <p class="text-white/80 text-sm" id="profile-email">...</p>
+                <span class="bg-black/20 text-white px-3 py-1 rounded-full text-xs mt-2 inline-block" id="profile-role">Member</span>
             </div>
             <div class="px-4 -mt-8 relative z-10 pb-24 space-y-3">
                 <div class="bg-white p-4 rounded-xl shadow-sm flex gap-4 items-center"><i class="fas fa-user-edit text-blue-500 bg-blue-50 p-2 rounded"></i> <span class="flex-1 font-bold text-gray-700 text-sm">Edit Profile</span> <i class="fas fa-chevron-right text-gray-300"></i></div>
-                <div class="bg-white p-4 rounded-xl shadow-sm flex gap-4 items-center"><i class="fas fa-box text-purple-500 bg-purple-50 p-2 rounded"></i> <span class="flex-1 font-bold text-gray-700 text-sm">Orders</span> <i class="fas fa-chevron-right text-gray-300"></i></div>
+                <div class="bg-white p-4 rounded-xl shadow-sm flex gap-4 items-center" onclick="logout()"><i class="fas fa-sign-out-alt text-red-500 bg-red-50 p-2 rounded"></i> <span class="flex-1 font-bold text-gray-700 text-sm">Logout</span></div>
             </div>
         </div>
     </div>
@@ -181,9 +198,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPhoneNumber, signInWithEmailAndPassword, createUserWithEmailAndPassword, RecaptchaVerifier, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // 🔥🔥 YOUR FIREBASE CONFIGURATION HERE 🔥🔥
         const firebaseConfig = {
             apiKey: "AIzaSyCQhQdXUzavx0Y6uXOtJhHPrONb-sncxh4",
             authDomain: "income-app-d77b4.firebaseapp.com",
@@ -193,88 +209,55 @@
             appId: "1:94252807897:web:f1a7af6213e1dee3d730c8"
         };
 
-        let app, auth, db;
-        try {
-            app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-            auth.useDeviceLanguage();
-        } catch(e) { console.error("Firebase Init Error:", e); }
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        auth.useDeviceLanguage();
 
-        // AUTH TOGGLE
-        window.toggleAuth = (method) => {
-            if(method === 'email') {
-                document.getElementById('phone-section').classList.add('hidden');
-                document.getElementById('email-section').classList.remove('hidden');
-            } else {
-                document.getElementById('email-section').classList.add('hidden');
-                document.getElementById('phone-section').classList.remove('hidden');
-            }
+        // --- AUTH & SETUP ---
+        window.toggleAuth = (m) => {
+            document.getElementById('phone-section').classList.toggle('hidden');
+            document.getElementById('email-section').classList.toggle('hidden');
         };
 
-        // PHONE LOGIN
+        // LOGIN LOGIC (Phone & Email) - Simplified for brevity
         window.recaptchaVerifier = null;
         window.sendOTP = async () => {
             const phone = document.getElementById('phone-input').value;
             if(phone.length < 10) return Swal.fire('Error', 'Invalid Number', 'error');
-            const fullPhone = "+880" + phone;
-
-            if(!window.recaptchaVerifier) {
-                window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { 'size': 'invisible' });
-            }
-
-            Swal.fire({ title: 'Sending OTP...', didOpen: () => Swal.showLoading() });
-
+            if(!window.recaptchaVerifier) window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { 'size': 'invisible' });
+            
             try {
-                window.confirmationResult = await signInWithPhoneNumber(auth, fullPhone, window.recaptchaVerifier);
-                Swal.close();
-                const { value: code } = await Swal.fire({
-                    title: 'Enter OTP',
-                    input: 'text',
-                    inputLabel: 'Check SMS for code',
-                    confirmButtonText: 'Verify',
-                    confirmButtonColor: '#FBC02D',
-                    showCancelButton: true
-                });
-
-                if (code) {
-                    Swal.fire({ title: 'Verifying...', didOpen: () => Swal.showLoading() });
-                    const res = await window.confirmationResult.confirm(code);
-                    await createUserDoc(res.user);
-                    Swal.close();
+                const confirmationResult = await signInWithPhoneNumber(auth, "+880"+phone, window.recaptchaVerifier);
+                const { value: code } = await Swal.fire({ title: 'Enter OTP', input: 'text', showCancelButton: true });
+                if(code) {
+                    const res = await confirmationResult.confirm(code);
+                    await checkUserDoc(res.user);
                 }
-            } catch (error) {
-                Swal.fire('Error', error.message, 'error');
-                if(window.recaptchaVerifier) window.recaptchaVerifier.render().then(widgetId => grecaptcha.reset(widgetId));
-            }
+            } catch(e) { Swal.fire('Error', e.message, 'error'); }
         };
 
-        // EMAIL LOGIN
         window.loginEmail = async () => {
             const email = document.getElementById('email-input').value;
             const pass = document.getElementById('pass-input').value;
-            Swal.fire({ title: 'Processing...', didOpen: () => Swal.showLoading() });
-
             try {
                 await signInWithEmailAndPassword(auth, email, pass);
-                Swal.close();
-            } catch (error) {
-                if(error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+            } catch(e) {
+                if(e.code.includes('not-found')) {
                     try {
                         const cred = await createUserWithEmailAndPassword(auth, email, pass);
-                        await createUserDoc(cred.user);
-                    } catch (e) { Swal.fire('Error', e.message, 'error'); }
-                } else { Swal.fire('Error', error.message, 'error'); }
+                        await checkUserDoc(cred.user);
+                    } catch(re) { Swal.fire('Error', re.message, 'error'); }
+                } else { Swal.fire('Error', e.message, 'error'); }
             }
         };
 
-        // AUTO DB CREATE
-        async function createUserDoc(user) {
-            const userRef = doc(db, "users", user.uid);
-            const snap = await getDoc(userRef);
-            if(!snap.exists()){
-                await setDoc(userRef, {
-                    name: user.phoneNumber || user.email.split('@')[0],
+        async function checkUserDoc(user) {
+            const ref = doc(db, "users", user.uid);
+            const snap = await getDoc(ref);
+            if(!snap.exists()) {
+                await setDoc(ref, {
+                    name: user.email ? user.email.split('@')[0] : 'User',
                     email: user.email || user.phoneNumber,
                     balance: 0, points: 50, role: 'member',
                     createdAt: new Date().toISOString()
@@ -282,21 +265,29 @@
             }
         }
 
-        // AUTH STATE
+        // --- CORE LOGIC ---
         onAuthStateChanged(auth, async (user) => {
             const loader = document.getElementById('loader');
             if(user) {
                 const userRef = doc(db, "users", user.uid);
-                const snap = await getDoc(userRef);
-                if(!snap.exists()) await createUserDoc(user);
-
                 onSnapshot(userRef, (doc) => {
                     const d = doc.data();
                     if(d) {
+                        // Update UI
                         ['wallet-balance'].forEach(id => document.getElementById(id).innerText = d.balance.toFixed(2));
                         document.getElementById('wallet-points').innerText = d.points;
-                        ['drawer-name', 'profile-name'].forEach(id => document.getElementById(id).innerText = d.name);
-                        ['drawer-phone', 'profile-email'].forEach(id => document.getElementById(id).innerText = d.email);
+                        ['home-name', 'profile-name'].forEach(id => document.getElementById(id).innerText = d.name);
+                        ['home-role', 'profile-role'].forEach(id => document.getElementById(id).innerText = d.role.toUpperCase());
+                        document.getElementById('profile-email').innerText = d.email;
+
+                        // Role Based Access
+                        const specialAccess = document.getElementById('special-access');
+                        const adminBtn = document.getElementById('btn-admin');
+                        const leaderBtn = document.getElementById('btn-leader');
+
+                        specialAccess.classList.remove('hidden');
+                        if(d.role === 'admin') adminBtn.classList.remove('hidden');
+                        if(d.role === 'leader') leaderBtn.classList.remove('hidden');
                     }
                 });
 
@@ -313,36 +304,37 @@
             loader.style.display = 'none';
         });
 
-        // NAVIGATION & UTILS
+        // ADMIN FUNCTION
+        window.adminAddBalance = async () => {
+            const email = document.getElementById('admin-user-email').value;
+            const amount = parseFloat(document.getElementById('admin-amount').value);
+            
+            const q = query(collection(db, "users"), where("email", "==", email));
+            const snap = await getDocs(q);
+            
+            if(!snap.empty) {
+                const userDoc = snap.docs[0];
+                const newBal = (userDoc.data().balance || 0) + amount;
+                await updateDoc(doc(db, "users", userDoc.id), { balance: newBal });
+                Swal.fire('Success', 'Balance Added!', 'success');
+            } else {
+                Swal.fire('Error', 'User not found', 'error');
+            }
+        };
+
+        // NAVIGATION
         window.navigate = (page) => {
             document.querySelectorAll('.page-view').forEach(el => el.classList.remove('active'));
             document.getElementById('view-' + page).classList.add('active');
             document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
-            if(page !== 'wallet') document.getElementById('nav-' + page)?.classList.add('active');
-            if(page === 'wallet') initThreeJS();
-        }
-        window.toggleDrawer = () => document.getElementById('drawer').classList.toggle('open');
+            if(['home','tasks','shop','profile'].includes(page)) document.getElementById('nav-' + page).classList.add('active');
+        };
+
         window.logout = () => signOut(auth);
+        window.toggleDrawer = () => document.getElementById('drawer').classList.toggle('open');
         window.showToast = (msg) => Swal.fire({toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, icon: 'info', title: msg});
         window.claimBonus = () => Swal.fire('Bonus', 'You earned 50 points!', 'success');
 
-        function initThreeJS() {
-            const cont = document.getElementById('coin-container');
-            if(cont.children.length > 0) return;
-            const scene = new THREE.Scene();
-            const cam = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-            const ren = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-            ren.setSize(100, 100);
-            cont.appendChild(ren.domElement);
-            const geo = new THREE.CylinderGeometry(3, 3, 0.4, 32);
-            const mat = new THREE.MeshStandardMaterial({ color: 0xFFD700, metalness: 0.8, roughness: 0.2 });
-            const coin = new THREE.Mesh(geo, mat);
-            coin.rotation.x = Math.PI/2; scene.add(coin);
-            const l = new THREE.DirectionalLight(0xffffff, 1); l.position.set(5, 5, 5); scene.add(l); scene.add(new THREE.AmbientLight(0x404040));
-            cam.position.z = 8;
-            function anim() { requestAnimationFrame(anim); coin.rotation.z += 0.02; ren.render(scene, cam); }
-            anim();
-        }
     </script>
 </body>
 </html>
