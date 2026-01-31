@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Income Impact BD</title>
     
+    <!-- External Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -13,143 +14,219 @@
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
         :root { --primary: #FBC02D; --light-bg: #f8f9fa; }
         body { font-family: 'Poppins', sans-serif; background-color: var(--light-bg); -webkit-tap-highlight-color: transparent; user-select: none; overflow-x: hidden; padding-bottom: 80px; }
-        .hide-scroll::-webkit-scrollbar { display: none; }
+        
+        /* Smooth Transitions */
         .page-view { display: none; opacity: 0; animation: fadeIn 0.3s forwards; }
         .page-view.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         
+        /* Layout Styles */
         .app-header { background: var(--primary); padding: 15px 20px 25px; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; color: white; position: sticky; top: 0; z-index: 40; box-shadow: 0 4px 10px rgba(251, 192, 45, 0.3); }
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: white; height: 70px; display: flex; justify-content: space-between; align-items: flex-end; padding: 0 10px; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); z-index: 50; border-top-left-radius: 20px; border-top-right-radius: 20px; }
         .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-bottom: 12px; color: #bdbdbd; transition: 0.3s; }
         .nav-btn.active { color: var(--primary); }
         .floating-fab { width: 55px; height: 55px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 22px; border: 4px solid white; position: absolute; left: 50%; transform: translateX(-50%); bottom: 25px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); }
+        
+        /* Input Styles */
+        .auth-input { width: 100%; background: #f9fafb; border: 1px solid #e5e7eb; padding: 12px; rounded-xl; outline: none; transition: 0.3s; }
+        .auth-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(251, 192, 45, 0.1); }
     </style>
 </head>
 <body>
 
+    <!-- Loading Screen -->
     <div id="loader" class="fixed inset-0 bg-white z-[999] flex flex-col items-center justify-center">
         <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-yellow-500 mb-4"></div>
-        <p class="text-gray-500 text-sm font-medium">Loading System...</p>
+        <p class="text-gray-500 text-sm font-medium">Connecting...</p>
     </div>
 
     <div id="recaptcha-container"></div>
 
-    <!-- AUTH SCREEN -->
+    <!-- AUTHENTICATION SCREEN -->
     <div id="auth-view" class="fixed inset-0 bg-white z-[200] flex flex-col items-center justify-center p-6 hidden">
-        <div class="w-24 h-24 bg-yellow-50 rounded-full flex items-center justify-center mb-6 border-2 border-[#FBC02D]"><img src="https://cdn-icons-png.flaticon.com/512/295/295128.png" class="w-14"></div>
-        <h1 class="text-3xl font-bold text-gray-800 mb-1">Welcome</h1>
-        <p class="text-sm text-gray-500 mb-8">Login to continue</p>
+        <div class="w-24 h-24 bg-yellow-50 rounded-full flex items-center justify-center mb-6 border-2 border-[#FBC02D] animate-bounce">
+            <i class="fas fa-coins text-4xl text-[#FBC02D]"></i>
+        </div>
+        <h1 class="text-3xl font-bold text-gray-800 mb-1">Income App</h1>
+        <p class="text-sm text-gray-500 mb-8">Secure Login System</p>
 
-        <!-- PHONE LOGIN -->
-        <div id="phone-section" class="w-full space-y-4">
-            <div class="relative">
-                <span class="absolute left-4 top-3.5 text-gray-500 font-bold text-lg">+880</span>
-                <input type="tel" id="phone-input" placeholder="17xxxxxxxx" class="w-full bg-gray-50 border border-gray-200 p-3.5 pl-16 rounded-xl outline-none focus:border-[#FBC02D] font-bold text-lg tracking-wider" maxlength="10">
+        <!-- EMAIL LOGIN (Primary) -->
+        <div id="email-section" class="w-full space-y-4">
+            <input type="email" id="email-input" placeholder="Enter Email" class="auth-input">
+            <input type="password" id="pass-input" placeholder="Enter Password" class="auth-input">
+            <button onclick="loginEmail()" class="w-full bg-[#FBC02D] text-white py-3.5 rounded-xl font-bold shadow-lg active:scale-95 transition">LOGIN / REGISTER</button>
+            
+            <div class="relative flex py-2 items-center">
+                <div class="flex-grow border-t border-gray-200"></div>
+                <span class="flex-shrink-0 mx-4 text-gray-400 text-xs">Optional</span>
+                <div class="flex-grow border-t border-gray-200"></div>
             </div>
-            <button onclick="sendOTP()" class="w-full bg-[#FBC02D] text-white py-3.5 rounded-xl font-bold shadow-lg active:scale-95 transition">SEND OTP</button>
-            <p class="text-center text-xs text-gray-400 cursor-pointer hover:text-[#FBC02D]" onclick="toggleAuth('email')">Or login with Email</p>
+            
+            <p class="text-center text-xs text-gray-400 cursor-pointer hover:text-[#FBC02D]" onclick="toggleAuth('phone')">Try Phone Login (May require billing)</p>
         </div>
 
-        <!-- EMAIL LOGIN -->
-        <div id="email-section" class="w-full space-y-4 hidden">
-            <input type="email" id="email-input" placeholder="Email Address" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none focus:border-[#FBC02D]">
-            <input type="password" id="pass-input" placeholder="Password" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none focus:border-[#FBC02D]">
-            <button onclick="loginEmail()" class="w-full bg-[#FBC02D] text-white py-3.5 rounded-xl font-bold shadow-lg active:scale-95 transition">LOGIN</button>
-            <p class="text-center text-xs text-gray-400 cursor-pointer hover:text-[#FBC02D]" onclick="toggleAuth('phone')">Or login with Phone</p>
+        <!-- PHONE LOGIN (Secondary) -->
+        <div id="phone-section" class="w-full space-y-4 hidden">
+            <div class="relative">
+                <span class="absolute left-4 top-3.5 text-gray-500 font-bold text-lg">+880</span>
+                <input type="tel" id="phone-input" placeholder="17xxxxxxxx" class="auth-input pl-16 font-bold text-lg tracking-wider" maxlength="10">
+            </div>
+            <button onclick="sendOTP()" class="w-full bg-gray-800 text-white py-3.5 rounded-xl font-bold shadow-lg active:scale-95 transition">SEND OTP</button>
+            <p class="text-center text-xs text-gray-400 cursor-pointer hover:text-[#FBC02D]" onclick="toggleAuth('email')">Back to Email Login</p>
         </div>
     </div>
 
-    <!-- MAIN APP -->
+    <!-- MAIN APPLICATION CONTAINER -->
     <div id="app-container" class="hidden">
         
         <!-- ADMIN PANEL -->
         <div id="view-admin" class="page-view px-4 pt-6 bg-gray-100 min-h-screen">
-            <h2 class="text-center font-bold text-xl mb-4 text-red-600">ADMIN PANEL</h2>
-            <div class="bg-white p-4 rounded-xl shadow mb-4">
-                <h3 class="font-bold mb-2">Send Balance</h3>
-                <input type="email" id="admin-user-email" placeholder="User Email" class="w-full border p-2 rounded mb-2">
-                <input type="number" id="admin-amount" placeholder="Amount" class="w-full border p-2 rounded mb-2">
-                <button onclick="adminAddBalance()" class="w-full bg-green-500 text-white py-2 rounded font-bold">Send Money</button>
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="font-bold text-xl text-red-600">ADMIN CONTROL</h2>
+                <button onclick="navigate('home')" class="bg-gray-200 p-2 rounded-full"><i class="fas fa-times"></i></button>
             </div>
-            <button onclick="navigate('home')" class="w-full bg-gray-800 text-white py-3 rounded-xl">Back to Home</button>
+            
+            <div class="bg-white p-6 rounded-2xl shadow-lg mb-4">
+                <h3 class="font-bold mb-4 text-gray-700">Add Balance to User</h3>
+                <input type="email" id="admin-user-email" placeholder="User Email Address" class="auth-input mb-3">
+                <input type="number" id="admin-amount" placeholder="Amount (Tk)" class="auth-input mb-4">
+                <button onclick="adminAddBalance()" class="w-full bg-green-500 text-white py-3 rounded-xl font-bold shadow-md hover:bg-green-600 transition">Send Money</button>
+            </div>
         </div>
 
-        <!-- HOME -->
+        <!-- HOME VIEW -->
         <div id="view-home" class="page-view active">
             <div class="app-header">
                 <div class="flex justify-between items-center mb-4">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-[#FBC02D] font-bold text-xl"><i class="fas fa-user"></i></div>
-                        <div><h2 class="font-bold text-lg leading-tight" id="home-name">User</h2><p class="text-[10px] opacity-90" id="home-role">Member</p></div>
+                        <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-[#FBC02D] font-bold text-xl shadow-sm"><i class="fas fa-user"></i></div>
+                        <div>
+                            <h2 class="font-bold text-lg leading-tight" id="home-name">Loading...</h2>
+                            <p class="text-[10px] opacity-90 uppercase tracking-wide" id="home-role">Member</p>
+                        </div>
                     </div>
-                    <div class="relative"><i class="fas fa-bell text-xl"></i></div>
+                    <div onclick="logout()" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center cursor-pointer"><i class="fas fa-sign-out-alt"></i></div>
                 </div>
-                <div class="bg-white/20 rounded-lg p-2 flex items-center backdrop-blur-sm"><i class="fas fa-bullhorn text-white mr-2"></i><marquee class="text-xs font-medium">Welcome to Income Impact BD. Start Earning!</marquee></div>
+                
+                <!-- Balance Card -->
+                <div class="bg-white text-gray-800 rounded-2xl p-4 shadow-lg flex justify-between items-center">
+                    <div>
+                        <p class="text-xs text-gray-500 font-medium">Total Balance</p>
+                        <h1 class="text-2xl font-bold">৳ <span id="header-balance">0.00</span></h1>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs text-gray-500 font-medium">Points</p>
+                        <h1 class="text-xl font-bold text-yellow-500"><i class="fas fa-star mr-1"></i><span id="header-points">0</span></h1>
+                    </div>
+                </div>
             </div>
             
-            <div class="px-4 -mt-6 relative z-10 pb-4">
-                <!-- Admin Button -->
+            <div class="px-4 mt-4 relative z-10 pb-4">
+                <!-- Admin Button (Hidden by default) -->
                 <div id="special-access" class="hidden mb-4">
-                    <button onclick="navigate('admin')" class="w-full bg-red-600 text-white py-2 rounded-lg text-xs font-bold shadow">OPEN ADMIN PANEL</button>
+                    <button onclick="navigate('admin')" class="w-full bg-gradient-to-r from-red-500 to-red-600 text-white py-3 rounded-xl text-sm font-bold shadow-md flex items-center justify-center gap-2">
+                        <i class="fas fa-shield-alt"></i> OPEN ADMIN PANEL
+                    </button>
                 </div>
 
-                <div class="grid grid-cols-4 gap-3 mb-6 bg-white p-4 rounded-xl shadow">
-                    <div class="flex flex-col items-center" onclick="navigate('tasks')"><i class="fas fa-tasks text-red-500 text-xl mb-1"></i><span class="text-[10px] font-bold">Tasks</span></div>
-                    <div class="flex flex-col items-center" onclick="navigate('wallet')"><i class="fas fa-wallet text-green-500 text-xl mb-1"></i><span class="text-[10px] font-bold">Wallet</span></div>
-                    <div class="flex flex-col items-center" onclick="navigate('shop')"><i class="fas fa-shopping-bag text-blue-500 text-xl mb-1"></i><span class="text-[10px] font-bold">Shop</span></div>
-                    <div class="flex flex-col items-center" onclick="claimBonus()"><i class="fas fa-gift text-yellow-500 text-xl mb-1"></i><span class="text-[10px] font-bold">Bonus</span></div>
+                <!-- Menu Grid -->
+                <h3 class="font-bold text-gray-700 mb-3">Quick Actions</h3>
+                <div class="grid grid-cols-2 gap-3 mb-6">
+                    <div class="bg-white p-4 rounded-xl shadow-sm flex items-center gap-3 cursor-pointer active:scale-95 transition" onclick="navigate('tasks')">
+                        <div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-500"><i class="fas fa-play"></i></div>
+                        <div><h4 class="font-bold text-sm">Start Task</h4><p class="text-[10px] text-gray-400">Earn Money</p></div>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm flex items-center gap-3 cursor-pointer active:scale-95 transition" onclick="navigate('wallet')">
+                        <div class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-500"><i class="fas fa-wallet"></i></div>
+                        <div><h4 class="font-bold text-sm">Withdraw</h4><p class="text-[10px] text-gray-400">Cash Out</p></div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- WALLET -->
+        <!-- WALLET VIEW -->
         <div id="view-wallet" class="page-view px-4 pt-6 bg-white min-h-screen">
-            <div class="bg-gray-900 rounded-2xl p-6 text-white shadow-xl mb-6 relative overflow-hidden">
-                <p class="text-sm opacity-70">Balance</p>
-                <h1 class="text-4xl font-bold mt-1">৳ <span id="wallet-balance">0.00</span></h1>
-                <span class="text-xs bg-white/20 px-2 py-1 rounded text-yellow-400 mt-2 inline-block"><i class="fas fa-star"></i> <span id="wallet-points">0</span> Pts</span>
+            <h2 class="text-2xl font-bold mb-6 text-center">My Wallet</h2>
+            <div class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-6 text-white shadow-xl mb-8">
+                <p class="text-sm opacity-70">Current Balance</p>
+                <h1 class="text-4xl font-bold mt-2">৳ <span id="wallet-balance">0.00</span></h1>
             </div>
-            <button class="w-full bg-green-500 text-white py-3 rounded-xl font-bold shadow mb-4">Withdraw</button>
+            
+            <h3 class="font-bold mb-3">Withdraw Method</h3>
+            <div class="space-y-3">
+                <div class="bg-gray-50 p-4 rounded-xl border flex justify-between items-center">
+                    <div class="flex items-center gap-3"><img src="https://i.ibb.co/vzD1fbd/bkash.png" class="w-8"> <span class="font-bold">Bkash</span></div>
+                    <button class="bg-pink-500 text-white px-4 py-1.5 rounded-lg text-xs font-bold" onclick="Swal.fire('Info', 'Minimum 100 Tk needed', 'info')">Redeem</button>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-xl border flex justify-between items-center">
+                    <div class="flex items-center gap-3"><img src="https://i.ibb.co/mJqqqF0/nagad.png" class="w-8"> <span class="font-bold">Nagad</span></div>
+                    <button class="bg-orange-500 text-white px-4 py-1.5 rounded-lg text-xs font-bold" onclick="Swal.fire('Info', 'Minimum 100 Tk needed', 'info')">Redeem</button>
+                </div>
+            </div>
         </div>
 
-        <!-- TASKS -->
-        <div id="view-tasks" class="page-view px-4 pt-6">
-            <div class="bg-white p-4 rounded-xl shadow border-l-4 border-red-500 flex justify-between items-center mb-3">
-                <div class="flex gap-3 items-center"><i class="fab fa-youtube text-red-500 text-3xl"></i><div><h4 class="font-bold text-sm">Watch Video</h4><p class="text-[10px] text-gray-500">60 Seconds</p></div></div>
-                <span class="font-bold text-green-600 text-sm">+50 Pts</span>
+        <!-- TASKS VIEW -->
+        <div id="view-tasks" class="page-view px-4 pt-6 pb-24">
+            <h2 class="text-xl font-bold mb-4">Daily Tasks</h2>
+            <div class="space-y-3">
+                <div onclick="doTask(50)" class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center active:bg-gray-50 transition cursor-pointer">
+                    <div class="flex gap-4 items-center">
+                        <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-500"><i class="fab fa-youtube text-xl"></i></div>
+                        <div><h4 class="font-bold text-sm">Watch Video 1</h4><p class="text-[10px] text-gray-500">Wait 5 seconds</p></div>
+                    </div>
+                    <span class="font-bold text-green-600 text-sm bg-green-50 px-2 py-1 rounded">+5.00 Tk</span>
+                </div>
+                <!-- More tasks can be added here -->
             </div>
         </div>
 
-        <!-- SHOP -->
+        <!-- SHOP VIEW -->
         <div id="view-shop" class="page-view px-4 pt-6">
+            <h2 class="text-xl font-bold mb-4">Shop</h2>
             <div class="grid grid-cols-2 gap-3">
-                <div class="bg-white p-2 rounded-xl shadow border"><h4 class="text-xs font-bold">Smart Watch</h4><span class="text-sm font-bold text-[#FBC02D]">৳1200</span></div>
+                <div class="bg-white p-3 rounded-xl shadow-sm border text-center">
+                    <div class="h-24 bg-gray-100 rounded-lg mb-2 flex items-center justify-center"><i class="fas fa-mobile-alt text-3xl text-gray-400"></i></div>
+                    <h4 class="text-xs font-bold">Gadget</h4>
+                    <span class="text-sm font-bold text-[#FBC02D]">৳1200</span>
+                    <button class="w-full mt-2 bg-gray-800 text-white text-xs py-1.5 rounded" onclick="Swal.fire('Shop', 'Insufficient Balance', 'warning')">Buy</button>
+                </div>
             </div>
         </div>
 
-        <!-- PROFILE -->
+        <!-- PROFILE VIEW -->
         <div id="view-profile" class="page-view px-4 pt-6 text-center">
-            <div class="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-3"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="w-full h-full rounded-full"></div>
+            <div class="w-24 h-24 bg-yellow-100 rounded-full mx-auto mb-4 flex items-center justify-center text-4xl text-yellow-600 font-bold border-4 border-white shadow-lg">
+                <i class="fas fa-user"></i>
+            </div>
             <h2 class="text-xl font-bold" id="profile-name">User</h2>
-            <p class="text-sm text-gray-500" id="profile-email">...</p>
-            <button onclick="logout()" class="mt-6 bg-red-500 text-white px-6 py-2 rounded-full">Logout</button>
+            <p class="text-sm text-gray-500 mb-6" id="profile-email">email@example.com</p>
+            
+            <div class="bg-white rounded-xl shadow-sm p-2 mb-6 text-left">
+                <div class="p-3 border-b flex justify-between"><span>User ID</span> <span class="font-mono text-xs text-gray-400">UID-123456</span></div>
+                <div class="p-3 border-b flex justify-between"><span>Joined</span> <span class="text-xs text-gray-400">Today</span></div>
+                <div class="p-3 flex justify-between"><span>Status</span> <span class="text-green-500 font-bold text-xs">Active</span></div>
+            </div>
+
+            <button onclick="logout()" class="w-full bg-red-50 text-red-500 border border-red-100 py-3 rounded-xl font-bold">Logout</button>
         </div>
     </div>
 
-    <!-- NAV -->
+    <!-- BOTTOM NAVIGATION -->
     <div id="bottom-nav" class="bottom-nav hidden">
-        <button onclick="navigate('home')" class="nav-btn active" id="nav-home"><i class="fas fa-home"></i><span>Home</span></button>
-        <button onclick="navigate('tasks')" class="nav-btn" id="nav-tasks"><i class="fas fa-tasks"></i><span>Tasks</span></button>
-        <div class="relative -top-6"><button onclick="navigate('wallet')" class="floating-fab"><i class="fas fa-wallet"></i></button></div>
-        <button onclick="navigate('shop')" class="nav-btn" id="nav-shop"><i class="fas fa-shopping-bag"></i><span>Shop</span></button>
-        <button onclick="navigate('profile')" class="nav-btn" id="nav-profile"><i class="fas fa-user"></i><span>Profile</span></button>
+        <button onclick="navigate('home')" class="nav-btn active" id="nav-home"><i class="fas fa-home text-xl mb-1"></i><span class="text-[10px]">Home</span></button>
+        <button onclick="navigate('tasks')" class="nav-btn" id="nav-tasks"><i class="fas fa-list-check text-xl mb-1"></i><span class="text-[10px]">Tasks</span></button>
+        <div class="relative -top-6"><button onclick="navigate('wallet')" class="floating-fab hover:scale-105 transition"><i class="fas fa-wallet"></i></button></div>
+        <button onclick="navigate('shop')" class="nav-btn" id="nav-shop"><i class="fas fa-shopping-bag text-xl mb-1"></i><span class="text-[10px]">Shop</span></button>
+        <button onclick="navigate('profile')" class="nav-btn" id="nav-profile"><i class="fas fa-user-circle text-xl mb-1"></i><span class="text-[10px]">Profile</span></button>
     </div>
 
+    <!-- FIREBASE LOGIC -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithPhoneNumber, signInWithEmailAndPassword, createUserWithEmailAndPassword, RecaptchaVerifier, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithPhoneNumber, signInWithEmailAndPassword, createUserWithEmailAndPassword, RecaptchaVerifier, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, collection, getDocs, query, where, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+        // YOUR CONFIGURATION (Provided by User)
         const firebaseConfig = {
             apiKey: "AIzaSyCkSCLRvZrFy-iR27jkiHANLG7Fjo5ComA",
             authDomain: "income-app-d77b4.firebaseapp.com",
@@ -162,44 +239,78 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        auth.useDeviceLanguage();
 
-        window.toggleAuth = (m) => {
-            document.getElementById('phone-section').classList.toggle('hidden');
-            document.getElementById('email-section').classList.toggle('hidden');
+        // Toggle Auth Screens
+        window.toggleAuth = (mode) => {
+            if(mode === 'phone') {
+                document.getElementById('email-section').classList.add('hidden');
+                document.getElementById('phone-section').classList.remove('hidden');
+            } else {
+                document.getElementById('phone-section').classList.add('hidden');
+                document.getElementById('email-section').classList.remove('hidden');
+            }
         };
 
+        // Phone Login (May fail without billing)
         window.recaptchaVerifier = null;
         window.sendOTP = async () => {
             const phone = document.getElementById('phone-input').value;
             if(phone.length < 10) return Swal.fire('Error', 'Invalid Number', 'error');
-            if(!window.recaptchaVerifier) window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { 'size': 'invisible' });
+            
+            if(!window.recaptchaVerifier) {
+                window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { 'size': 'invisible' });
+            }
             
             try {
                 const confirmationResult = await signInWithPhoneNumber(auth, "+880"+phone, window.recaptchaVerifier);
-                const { value: code } = await Swal.fire({ title: 'Enter OTP', input: 'text', showCancelButton: true });
+                const { value: code } = await Swal.fire({ 
+                    title: 'Enter OTP', 
+                    input: 'text', 
+                    confirmButtonColor: '#FBC02D',
+                    showCancelButton: true 
+                });
                 if(code) {
                     const res = await confirmationResult.confirm(code);
                     await checkUserDoc(res.user);
                 }
-            } catch(e) { Swal.fire('Error', e.message, 'error'); }
+            } catch(e) {
+                console.error(e);
+                // Handle Billing Error Gracefully
+                if(e.code && e.code.includes('billing-not-enabled')) {
+                    Swal.fire({
+                        title: 'Setup Required',
+                        text: 'Phone Auth requires billing setup in Firebase. Please use Email Login instead.',
+                        icon: 'warning',
+                        confirmButtonText: 'Use Email Login'
+                    }).then(() => toggleAuth('email'));
+                } else {
+                    Swal.fire('Error', e.message, 'error');
+                }
+            }
         };
 
+        // Email Login (FREE & Recommended)
         window.loginEmail = async () => {
             const email = document.getElementById('email-input').value;
             const pass = document.getElementById('pass-input').value;
+            
+            if(!email || !pass) return Swal.fire('Error', 'Please fill all fields', 'warning');
+
             try {
                 await signInWithEmailAndPassword(auth, email, pass);
             } catch(e) {
-                if(e.code.includes('not-found')) {
+                if(e.code.includes('not-found') || e.code.includes('invalid-credential')) {
+                    // Auto Register if user not found
                     try {
                         const cred = await createUserWithEmailAndPassword(auth, email, pass);
                         await checkUserDoc(cred.user);
+                        Swal.fire('Welcome', 'Account Created Successfully!', 'success');
                     } catch(re) { Swal.fire('Error', re.message, 'error'); }
                 } else { Swal.fire('Error', e.message, 'error'); }
             }
         };
 
+        // Create/Check User Database
         async function checkUserDoc(user) {
             const ref = doc(db, "users", user.uid);
             const snap = await getDoc(ref);
@@ -207,25 +318,34 @@
                 await setDoc(ref, {
                     name: user.email ? user.email.split('@')[0] : 'User',
                     email: user.email || user.phoneNumber,
-                    balance: 0, points: 50, role: 'member',
+                    balance: 0, 
+                    points: 50, 
+                    role: 'member',
                     createdAt: new Date().toISOString()
                 });
             }
         }
 
+        // Real-time Data Sync
         onAuthStateChanged(auth, async (user) => {
             const loader = document.getElementById('loader');
             if(user) {
                 const userRef = doc(db, "users", user.uid);
-                onSnapshot(userRef, (doc) => {
-                    const d = doc.data();
+                onSnapshot(userRef, (docSnap) => {
+                    const d = docSnap.data();
                     if(d) {
-                        ['wallet-balance'].forEach(id => document.getElementById(id).innerText = d.balance.toFixed(2));
+                        // Update UI Elements
+                        document.getElementById('wallet-balance').innerText = d.balance.toFixed(2);
+                        document.getElementById('header-balance').innerText = d.balance.toFixed(2);
+                        document.getElementById('header-points').innerText = d.points;
                         document.getElementById('wallet-points').innerText = d.points;
-                        ['home-name', 'profile-name'].forEach(id => document.getElementById(id).innerText = d.name);
-                        ['home-role'].forEach(id => document.getElementById(id).innerText = d.role.toUpperCase());
+                        
+                        document.getElementById('home-name').innerText = d.name;
+                        document.getElementById('profile-name').innerText = d.name;
+                        document.getElementById('home-role').innerText = d.role.toUpperCase();
                         document.getElementById('profile-email').innerText = d.email;
 
+                        // Admin Access Check
                         const specialAccess = document.getElementById('special-access');
                         if(d.role === 'admin') specialAccess.classList.remove('hidden');
                         else specialAccess.classList.add('hidden');
@@ -245,31 +365,64 @@
             loader.style.display = 'none';
         });
 
+        // Task Function
+        window.doTask = async (amount) => {
+            Swal.fire({
+                title: 'Watching Ad...',
+                text: 'Please wait 5 seconds',
+                timer: 5000,
+                timerProgressBar: true,
+                didOpen: () => Swal.showLoading()
+            }).then(async () => {
+                const user = auth.currentUser;
+                if(user) {
+                    const ref = doc(db, "users", user.uid);
+                    await updateDoc(ref, { balance: increment(5.00) }); // Adding 5 Tk
+                    Swal.fire('Success', '5 Tk Added to Wallet!', 'success');
+                }
+            });
+        };
+
+        // Admin Function
         window.adminAddBalance = async () => {
             const email = document.getElementById('admin-user-email').value;
             const amount = parseFloat(document.getElementById('admin-amount').value);
+            
+            if(!email || !amount) return Swal.fire('Error', 'Fill details', 'warning');
+
             const q = query(collection(db, "users"), where("email", "==", email));
             const snap = await getDocs(q);
             
             if(!snap.empty) {
                 const userDoc = snap.docs[0];
-                const newBal = (userDoc.data().balance || 0) + amount;
-                await updateDoc(doc(db, "users", userDoc.id), { balance: newBal });
-                Swal.fire('Success', 'Balance Added!', 'success');
+                await updateDoc(doc(db, "users", userDoc.id), { balance: increment(amount) });
+                Swal.fire('Success', `Added ${amount} Tk to ${email}`, 'success');
             } else {
-                Swal.fire('Error', 'User not found', 'error');
+                Swal.fire('Error', 'User email not found', 'error');
             }
         };
 
+        // Navigation Logic
         window.navigate = (page) => {
             document.querySelectorAll('.page-view').forEach(el => el.classList.remove('active'));
             document.getElementById('view-' + page).classList.add('active');
+            
             document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
-            if(['home','tasks','shop','profile'].includes(page)) document.getElementById('nav-' + page).classList.add('active');
+            if(['home','tasks','shop','profile'].includes(page)) {
+                document.getElementById('nav-' + page).classList.add('active');
+            }
         };
 
-        window.logout = () => signOut(auth);
-        window.claimBonus = () => Swal.fire('Bonus', 'You earned 50 points!', 'success');
+        window.logout = () => {
+            Swal.fire({
+                title: 'Logout?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes'
+            }).then((res) => {
+                if(res.isConfirmed) signOut(auth);
+            });
+        };
     </script>
 </body>
 </html>
