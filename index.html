@@ -10,135 +10,171 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <!-- Google Fonts -->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-        :root { --primary: #FBC02D; --light-bg: #f8f9fa; }
-        body { font-family: 'Poppins', sans-serif; background-color: var(--light-bg); -webkit-tap-highlight-color: transparent; user-select: none; overflow-x: hidden; padding-bottom: 80px; }
         
+        :root { 
+            --primary: #FBC02D; 
+            --light-bg: #f8f9fa; 
+            --theme-color: #FBC02D;
+        }
+
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background-color: var(--light-bg); 
+            -webkit-tap-highlight-color: transparent; 
+            user-select: none; 
+            overflow-x: hidden; 
+            padding-bottom: 80px; /* Space for bottom nav */
+        }
+
         /* Smooth Transitions */
         .page-view { display: none; opacity: 0; animation: fadeIn 0.3s forwards; }
         .page-view.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* Layout Styles */
-        .app-header { background: var(--primary); padding: 15px 20px 25px; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; color: white; position: sticky; top: 0; z-index: 40; box-shadow: 0 4px 10px rgba(251, 192, 45, 0.3); }
+        /* Drawer/Sidebar */
+        #drawer { transition: transform 0.3s ease-in-out; z-index: 9999; }
+        .drawer-open { transform: translateX(0) !important; }
+        #drawer-overlay { z-index: 9998; }
+
+        /* Custom Styles from your PHP */
+        .grid-icon-box { background: #fff; padding: 10px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; justify-content: center; height: 85px; cursor: pointer; transition: 0.2s; }
+        .grid-icon-box:active { transform: scale(0.95); }
+        .grid-icon-img { width: 32px; height: 32px; object-fit: contain; margin-bottom: 5px; }
+        .grid-text { font-size: 11px; font-weight: 600; text-align: center; line-height: 1.2; color: #333; }
+        
+        /* Bottom Nav */
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: white; height: 70px; display: flex; justify-content: space-between; align-items: flex-end; padding: 0 10px; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); z-index: 50; border-top-left-radius: 20px; border-top-right-radius: 20px; }
         .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-bottom: 12px; color: #bdbdbd; transition: 0.3s; }
         .nav-btn.active { color: var(--primary); }
-        .floating-fab { width: 55px; height: 55px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 22px; border: 4px solid white; position: absolute; left: 50%; transform: translateX(-50%); bottom: 25px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); }
-        
-        /* Input Styles */
-        .auth-input { width: 100%; background: #f9fafb; border: 1px solid #e5e7eb; padding: 12px; rounded-xl; outline: none; transition: 0.3s; }
-        .auth-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(251, 192, 45, 0.1); }
+        .floating-fab { width: 55px; height: 55px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 22px; border: 4px solid white; position: absolute; left: 50%; transform: translateX(-50%); bottom: 25px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); cursor: pointer; transition: 0.2s; }
+        .floating-fab:active { transform: translateX(-50%) scale(0.95); }
+
+        .logo-container { width: 80px; height: 80px; border-radius: 50%; overflow: hidden; border: 4px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.2); background: white; margin: 0 auto 20px; }
     </style>
 </head>
 <body>
 
-    <!-- Loading Screen -->
-    <div id="loader" class="fixed inset-0 bg-white z-[999] flex flex-col items-center justify-center">
-        <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-yellow-500 mb-4"></div>
-        <p class="text-gray-500 text-sm font-medium">Connecting...</p>
-    </div>
-
-    <div id="recaptcha-container"></div>
-
-    <!-- AUTHENTICATION SCREEN -->
-    <div id="auth-view" class="fixed inset-0 bg-white z-[200] flex flex-col items-center justify-center p-6 hidden">
-        <div class="w-24 h-24 bg-yellow-50 rounded-full flex items-center justify-center mb-6 border-2 border-[#FBC02D] animate-bounce">
-            <i class="fas fa-coins text-4xl text-[#FBC02D]"></i>
-        </div>
-        <h1 class="text-3xl font-bold text-gray-800 mb-1">Income App</h1>
-        <p class="text-sm text-gray-500 mb-8">Secure Login System</p>
-
-        <!-- EMAIL LOGIN (Primary) -->
-        <div id="email-section" class="w-full space-y-4">
-            <input type="email" id="email-input" placeholder="Enter Email" class="auth-input">
-            <input type="password" id="pass-input" placeholder="Enter Password" class="auth-input">
-            <button onclick="loginEmail()" class="w-full bg-[#FBC02D] text-white py-3.5 rounded-xl font-bold shadow-lg active:scale-95 transition">LOGIN / REGISTER</button>
-            
-            <div class="relative flex py-2 items-center">
-                <div class="flex-grow border-t border-gray-200"></div>
-                <span class="flex-shrink-0 mx-4 text-gray-400 text-xs">Optional</span>
-                <div class="flex-grow border-t border-gray-200"></div>
+    <!-- SIDEBAR DRAWER -->
+    <div id="drawer-overlay" onclick="toggleDrawer()" class="fixed inset-0 bg-black/50 hidden transition-opacity"></div>
+    <div id="drawer" class="fixed top-0 left-0 w-[85%] max-w-[320px] h-full bg-white transform -translate-x-full overflow-y-auto shadow-2xl flex flex-col">
+        <div class="bg-[#FBC02D] p-6">
+            <div class="flex items-center gap-4">
+                <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="w-16 h-16 rounded-full border-2 border-white object-cover bg-white">
+                <div class="text-white">
+                    <h2 class="font-bold text-lg truncate" id="drawer-name">User Name</h2>
+                    <div class="text-xs bg-black/20 px-3 py-1 rounded mt-1">ID: <span id="drawer-id">123456</span></div>
+                </div>
             </div>
-            
-            <p class="text-center text-xs text-gray-400 cursor-pointer hover:text-[#FBC02D]" onclick="toggleAuth('phone')">Try Phone Login (May require billing)</p>
-        </div>
-
-        <!-- PHONE LOGIN (Secondary) -->
-        <div id="phone-section" class="w-full space-y-4 hidden">
-            <div class="relative">
-                <span class="absolute left-4 top-3.5 text-gray-500 font-bold text-lg">+880</span>
-                <input type="tel" id="phone-input" placeholder="17xxxxxxxx" class="auth-input pl-16 font-bold text-lg tracking-wider" maxlength="10">
+            <div class="mt-4">
+                <span class="bg-red-600 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-md inline-flex items-center gap-2 w-full justify-center cursor-pointer" onclick="Swal.fire('Info', 'Contact Admin to verify', 'info')">
+                    Verify Now <i class="fas fa-arrow-right"></i>
+                </span>
             </div>
-            <button onclick="sendOTP()" class="w-full bg-gray-800 text-white py-3.5 rounded-xl font-bold shadow-lg active:scale-95 transition">SEND OTP</button>
-            <p class="text-center text-xs text-gray-400 cursor-pointer hover:text-[#FBC02D]" onclick="toggleAuth('email')">Back to Email Login</p>
+        </div>
+        <div class="p-5 flex-1 space-y-2">
+            <p class="text-xs font-bold text-gray-400 uppercase mb-2">My Account</p>
+            <a onclick="navigate('home'); toggleDrawer()" class="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg text-gray-700 cursor-pointer"><i class="fas fa-home text-orange-500"></i> <span class="text-sm font-bold">Home</span></a>
+            <a onclick="navigate('tasks'); toggleDrawer()" class="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg text-gray-700 cursor-pointer"><i class="fas fa-tasks text-blue-500"></i> <span class="text-sm font-bold">Task History</span></a>
+            <a onclick="navigate('wallet'); toggleDrawer()" class="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg text-gray-700 cursor-pointer"><i class="fas fa-wallet text-pink-500"></i> <span class="text-sm font-bold">Wallet</span></a>
+            <a onclick="navigate('profile'); toggleDrawer()" class="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg text-gray-700 cursor-pointer"><i class="fas fa-user text-cyan-500"></i> <span class="text-sm font-bold">Profile</span></a>
+            
+            <p class="text-xs font-bold text-gray-400 uppercase mb-2 mt-4">Support</p>
+            <a href="#" class="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg text-gray-700 cursor-pointer"><i class="fab fa-telegram text-blue-500"></i> <span class="text-sm font-bold">Telegram</span></a>
+            <a onclick="logout()" class="flex items-center gap-3 p-3 mt-4 bg-gray-100 rounded-lg text-red-500 font-bold justify-center text-sm cursor-pointer"><i class="fas fa-power-off"></i> Log Out</a>
         </div>
     </div>
 
-    <!-- MAIN APPLICATION CONTAINER -->
+    <!-- AUTH SCREEN -->
+    <div id="auth-view" class="fixed inset-0 bg-[#FBC02D] z-[200] flex flex-col items-center justify-center p-6">
+        <div class="logo-container animate-bounce">
+            <img src="https://cdn-icons-png.flaticon.com/512/295/295128.png" class="w-full h-full object-cover">
+        </div>
+        <div class="bg-white rounded-3xl p-8 w-full max-w-sm shadow-2xl">
+            <h2 class="text-2xl font-black text-center text-gray-800 mb-6">Login</h2>
+            <div class="space-y-4">
+                <div class="relative">
+                    <i class="fas fa-phone absolute left-4 top-4 text-green-600"></i>
+                    <input type="tel" id="login-phone" placeholder="Mobile Number" class="w-full border bg-gray-50 p-3.5 pl-12 rounded-xl outline-none focus:border-[#FBC02D]">
+                </div>
+                <div class="relative">
+                    <i class="fas fa-lock absolute left-4 top-4 text-gray-400"></i>
+                    <input type="password" id="login-pass" placeholder="Password" class="w-full border bg-gray-50 p-3.5 pl-12 rounded-xl outline-none focus:border-[#FBC02D]">
+                </div>
+                <button onclick="handleLogin()" class="w-full bg-gray-900 text-white py-4 rounded-xl font-bold shadow-lg active:scale-95 transition">LOGIN NOW</button>
+            </div>
+            <p class="text-center mt-4 text-xs text-gray-400">Don't have an account? <span class="text-yellow-600 font-bold cursor-pointer" onclick="alert('For demo, just enter any number/password to login!')">Register</span></p>
+        </div>
+    </div>
+
+    <!-- MAIN APP CONTAINER -->
     <div id="app-container" class="hidden">
         
-        <!-- ADMIN PANEL -->
-        <div id="view-admin" class="page-view px-4 pt-6 bg-gray-100 min-h-screen">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="font-bold text-xl text-red-600">ADMIN CONTROL</h2>
-                <button onclick="navigate('home')" class="bg-gray-200 p-2 rounded-full"><i class="fas fa-times"></i></button>
+        <!-- HEADER -->
+        <div class="bg-[#FBC02D] px-4 py-3.5 text-white flex justify-between items-center shadow-md sticky top-0 z-40">
+            <div class="flex items-center gap-3">
+                <button onclick="toggleDrawer()" class="p-1"><i class="fas fa-bars text-2xl"></i></button>
+                <div class="flex flex-col leading-tight">
+                    <h1 class="font-bold text-lg">Income Impact BD</h1>
+                    <span class="text-xs opacity-90">Learning & Earning Platform</span>
+                </div>
             </div>
-            
-            <div class="bg-white p-6 rounded-2xl shadow-lg mb-4">
-                <h3 class="font-bold mb-4 text-gray-700">Add Balance to User</h3>
-                <input type="email" id="admin-user-email" placeholder="User Email Address" class="auth-input mb-3">
-                <input type="number" id="admin-amount" placeholder="Amount (Tk)" class="auth-input mb-4">
-                <button onclick="adminAddBalance()" class="w-full bg-green-500 text-white py-3 rounded-xl font-bold shadow-md hover:bg-green-600 transition">Send Money</button>
+            <div class="relative cursor-pointer" onclick="Swal.fire('Notification', 'Welcome to Income Impact BD', 'info')">
+                <i class="fas fa-bell text-2xl"></i>
+                <span class="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full border-2 border-[#FBC02D]">1</span>
             </div>
         </div>
 
         <!-- HOME VIEW -->
         <div id="view-home" class="page-view active">
-            <div class="app-header">
-                <div class="flex justify-between items-center mb-4">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-[#FBC02D] font-bold text-xl shadow-sm"><i class="fas fa-user"></i></div>
-                        <div>
-                            <h2 class="font-bold text-lg leading-tight" id="home-name">Loading...</h2>
-                            <p class="text-[10px] opacity-90 uppercase tracking-wide" id="home-role">Member</p>
-                        </div>
-                    </div>
-                    <div onclick="logout()" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center cursor-pointer"><i class="fas fa-sign-out-alt"></i></div>
+            <!-- Slider -->
+            <div class="bg-white pt-4 pb-2">
+                <div class="flex justify-between px-4 mb-2">
+                    <h3 class="font-bold text-gray-700">Premium Products</h3>
+                    <span class="text-xs text-[#FBC02D] font-bold">See All</span>
                 </div>
-                
-                <!-- Balance Card -->
-                <div class="bg-white text-gray-800 rounded-2xl p-4 shadow-lg flex justify-between items-center">
-                    <div>
-                        <p class="text-xs text-gray-500 font-medium">Total Balance</p>
-                        <h1 class="text-2xl font-bold">৳ <span id="header-balance">0.00</span></h1>
+                <div class="flex gap-3 overflow-x-auto px-4 pb-2" style="scrollbar-width: none;">
+                    <div class="min-w-[140px] bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="h-24 bg-gray-200"><img src="https://cdn-icons-png.flaticon.com/512/3081/3081559.png" class="w-full h-full object-contain p-2"></div>
+                        <div class="p-2"><h4 class="text-xs font-bold">Smart Watch</h4><p class="text-orange-500 font-bold text-sm">৳1200</p></div>
                     </div>
-                    <div class="text-right">
-                        <p class="text-xs text-gray-500 font-medium">Points</p>
-                        <h1 class="text-xl font-bold text-yellow-500"><i class="fas fa-star mr-1"></i><span id="header-points">0</span></h1>
+                    <div class="min-w-[140px] bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="h-24 bg-gray-200"><img src="https://cdn-icons-png.flaticon.com/512/2985/2985769.png" class="w-full h-full object-contain p-2"></div>
+                        <div class="p-2"><h4 class="text-xs font-bold">Headphone</h4><p class="text-orange-500 font-bold text-sm">৳850</p></div>
                     </div>
                 </div>
             </div>
-            
-            <div class="px-4 mt-4 relative z-10 pb-4">
-                <!-- Admin Button (Hidden by default) -->
-                <div id="special-access" class="hidden mb-4">
-                    <button onclick="navigate('admin')" class="w-full bg-gradient-to-r from-red-500 to-red-600 text-white py-3 rounded-xl text-sm font-bold shadow-md flex items-center justify-center gap-2">
-                        <i class="fas fa-shield-alt"></i> OPEN ADMIN PANEL
-                    </button>
-                </div>
 
-                <!-- Menu Grid -->
-                <h3 class="font-bold text-gray-700 mb-3">Quick Actions</h3>
-                <div class="grid grid-cols-2 gap-3 mb-6">
-                    <div class="bg-white p-4 rounded-xl shadow-sm flex items-center gap-3 cursor-pointer active:scale-95 transition" onclick="navigate('tasks')">
-                        <div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-500"><i class="fas fa-play"></i></div>
-                        <div><h4 class="font-bold text-sm">Start Task</h4><p class="text-[10px] text-gray-400">Earn Money</p></div>
-                    </div>
-                    <div class="bg-white p-4 rounded-xl shadow-sm flex items-center gap-3 cursor-pointer active:scale-95 transition" onclick="navigate('wallet')">
-                        <div class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-500"><i class="fas fa-wallet"></i></div>
-                        <div><h4 class="font-bold text-sm">Withdraw</h4><p class="text-[10px] text-gray-400">Cash Out</p></div>
+            <!-- Notice -->
+            <div class="px-3 mt-2">
+                <div class="bg-yellow-50 border-l-4 border-[#FBC02D] p-2 text-xs rounded-r-lg shadow-sm flex items-center">
+                    <i class="fas fa-bullhorn text-[#FBC02D] mr-2"></i>
+                    <marquee class="font-medium text-gray-700">Welcome to Income Impact BD. কাজ করুন এবং ইনকাম করুন।</marquee>
+                </div>
+            </div>
+
+            <!-- Grid Icons -->
+            <div class="px-3 mt-4">
+                <div class="grid grid-cols-4 gap-3">
+                    <div class="grid-icon-box" onclick="navigate('wallet')"><img src="https://cdn-icons-png.flaticon.com/512/2331/2331941.png" class="grid-icon-img"><span class="grid-text">Recharge</span></div>
+                    <div class="grid-icon-box" onclick="Swal.fire('Drive', 'Coming Soon', 'info')"><img src="https://cdn-icons-png.flaticon.com/512/3659/3659899.png" class="grid-icon-img"><span class="grid-text">Drive</span></div>
+                    <div class="grid-icon-box" onclick="navigate('tasks')"><img src="https://cdn-icons-png.flaticon.com/512/2936/2936669.png" class="grid-icon-img"><span class="grid-text">Micro Job</span></div>
+                    <div class="grid-icon-box" onclick="navigate('tasks')"><img src="https://cdn-icons-png.flaticon.com/512/1968/1968666.png" class="grid-icon-img"><span class="grid-text">Ads View</span></div>
+                    <div class="grid-icon-box"><img src="https://cdn-icons-png.flaticon.com/512/1603/1603847.png" class="grid-icon-img"><span class="grid-text">Leaderboard</span></div>
+                    <div class="grid-icon-box"><img src="https://cdn-icons-png.flaticon.com/512/2910/2910793.png" class="grid-icon-img"><span class="grid-text">Typing Job</span></div>
+                    <div class="grid-icon-box"><img src="https://cdn-icons-png.flaticon.com/512/5551/5551368.png" class="grid-icon-img"><span class="grid-text">Bonus</span></div>
+                    <div class="grid-icon-box"><img src="https://cdn-icons-png.flaticon.com/512/4233/4233839.png" class="grid-icon-img"><span class="grid-text">Ask</span></div>
+                </div>
+            </div>
+
+            <!-- Free Ads Banner -->
+            <div class="px-3 mt-6">
+                <div class="block w-full bg-gradient-to-r from-orange-300 to-[#FBC02D] rounded-full p-1 shadow-lg transform active:scale-95 transition cursor-pointer">
+                    <div class="bg-[#FBC02D] rounded-full border-2 border-white px-6 py-4 flex items-center justify-center gap-2">
+                        <i class="fas fa-angle-double-right text-white text-2xl animate-pulse"></i>
+                        <span class="text-white font-black text-lg tracking-wider uppercase">FREE ADS MARKETING</span>
                     </div>
                 </div>
             </div>
@@ -146,264 +182,155 @@
 
         <!-- WALLET VIEW -->
         <div id="view-wallet" class="page-view px-4 pt-6 bg-white min-h-screen">
-            <h2 class="text-2xl font-bold mb-6 text-center">My Wallet</h2>
-            <div class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-6 text-white shadow-xl mb-8">
-                <p class="text-sm opacity-70">Current Balance</p>
-                <h1 class="text-4xl font-bold mt-2">৳ <span id="wallet-balance">0.00</span></h1>
-            </div>
-            
-            <h3 class="font-bold mb-3">Withdraw Method</h3>
-            <div class="space-y-3">
-                <div class="bg-gray-50 p-4 rounded-xl border flex justify-between items-center">
-                    <div class="flex items-center gap-3"><img src="https://i.ibb.co/vzD1fbd/bkash.png" class="w-8"> <span class="font-bold">Bkash</span></div>
-                    <button class="bg-pink-500 text-white px-4 py-1.5 rounded-lg text-xs font-bold" onclick="Swal.fire('Info', 'Minimum 100 Tk needed', 'info')">Redeem</button>
+            <h2 class="font-bold text-xl mb-4">My Wallet</h2>
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <div class="bg-blue-600 text-white p-5 rounded-2xl shadow-lg relative overflow-hidden">
+                    <h2 class="text-2xl font-bold" id="user-points">0</h2><p class="text-xs opacity-80 uppercase font-bold">Points</p>
+                    <i class="fas fa-star absolute -bottom-2 -right-2 text-6xl opacity-20"></i>
                 </div>
-                <div class="bg-gray-50 p-4 rounded-xl border flex justify-between items-center">
-                    <div class="flex items-center gap-3"><img src="https://i.ibb.co/mJqqqF0/nagad.png" class="w-8"> <span class="font-bold">Nagad</span></div>
-                    <button class="bg-orange-500 text-white px-4 py-1.5 rounded-lg text-xs font-bold" onclick="Swal.fire('Info', 'Minimum 100 Tk needed', 'info')">Redeem</button>
+                <div class="bg-green-600 text-white p-5 rounded-2xl shadow-lg relative overflow-hidden">
+                    <h2 class="text-2xl font-bold">৳<span id="user-balance">0.00</span></h2><p class="text-xs opacity-80 uppercase font-bold">Balance</p>
+                    <i class="fas fa-coins absolute -bottom-2 -right-2 text-6xl opacity-20"></i>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
+                <h3 class="font-bold text-gray-700 mb-5 border-b pb-2">Withdraw Money</h3>
+                <div class="space-y-4">
+                    <select class="w-full bg-gray-50 p-3.5 rounded-xl border outline-none font-bold text-gray-700">
+                        <option>Bkash (Min 200)</option>
+                        <option>Nagad (Min 200)</option>
+                    </select>
+                    <input type="number" placeholder="Amount" class="w-full bg-gray-50 p-3.5 rounded-xl border outline-none font-bold text-gray-700">
+                    <input type="tel" placeholder="Account Number" class="w-full bg-gray-50 p-3.5 rounded-xl border outline-none font-bold text-gray-700">
+                    <button class="w-full bg-[#FBC02D] text-white py-4 rounded-xl font-bold shadow-lg mt-2" onclick="Swal.fire('Success', 'Request Submitted!', 'success')">Submit Request</button>
                 </div>
             </div>
         </div>
 
         <!-- TASKS VIEW -->
-        <div id="view-tasks" class="page-view px-4 pt-6 pb-24">
-            <h2 class="text-xl font-bold mb-4">Daily Tasks</h2>
-            <div class="space-y-3">
-                <div onclick="doTask(50)" class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center active:bg-gray-50 transition cursor-pointer">
-                    <div class="flex gap-4 items-center">
-                        <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-500"><i class="fab fa-youtube text-xl"></i></div>
-                        <div><h4 class="font-bold text-sm">Watch Video 1</h4><p class="text-[10px] text-gray-500">Wait 5 seconds</p></div>
+        <div id="view-tasks" class="page-view px-4 pt-6 bg-gray-50 min-h-screen">
+            <h2 class="font-bold text-xl mb-4">Available Tasks</h2>
+            
+            <div class="bg-gradient-to-r from-purple-600 to-blue-600 p-4 rounded-xl shadow-lg text-white relative mb-4">
+                <div class="flex justify-between items-start mb-2">
+                    <div class="flex gap-3">
+                        <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center"><i class="fas fa-play"></i></div>
+                        <div><h4 class="font-bold">Watch Video</h4><span class="text-xs bg-black/20 px-2 rounded text-yellow-300 font-bold">50 Points</span></div>
                     </div>
-                    <span class="font-bold text-green-600 text-sm bg-green-50 px-2 py-1 rounded">+5.00 Tk</span>
                 </div>
-                <!-- More tasks can be added here -->
+                <button onclick="doTask()" class="w-full bg-white text-gray-800 py-3 rounded-lg font-bold shadow hover:bg-gray-100 transition"><i class="fas fa-play-circle"></i> Watch Video</button>
             </div>
-        </div>
 
-        <!-- SHOP VIEW -->
-        <div id="view-shop" class="page-view px-4 pt-6">
-            <h2 class="text-xl font-bold mb-4">Shop</h2>
-            <div class="grid grid-cols-2 gap-3">
-                <div class="bg-white p-3 rounded-xl shadow-sm border text-center">
-                    <div class="h-24 bg-gray-100 rounded-lg mb-2 flex items-center justify-center"><i class="fas fa-mobile-alt text-3xl text-gray-400"></i></div>
-                    <h4 class="text-xs font-bold">Gadget</h4>
-                    <span class="text-sm font-bold text-[#FBC02D]">৳1200</span>
-                    <button class="w-full mt-2 bg-gray-800 text-white text-xs py-1.5 rounded" onclick="Swal.fire('Shop', 'Insufficient Balance', 'warning')">Buy</button>
+            <div class="bg-gradient-to-r from-orange-500 to-yellow-500 p-4 rounded-xl shadow-lg text-white relative">
+                <div class="flex justify-between items-start mb-2">
+                    <div class="flex gap-3">
+                        <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center"><i class="fas fa-globe"></i></div>
+                        <div><h4 class="font-bold">Visit Website</h4><span class="text-xs bg-black/20 px-2 rounded text-yellow-300 font-bold">25 Points</span></div>
+                    </div>
                 </div>
+                <button onclick="doTask()" class="w-full bg-white text-gray-800 py-3 rounded-lg font-bold shadow hover:bg-gray-100 transition"><i class="fas fa-external-link-alt"></i> Visit Now</button>
             </div>
         </div>
 
         <!-- PROFILE VIEW -->
-        <div id="view-profile" class="page-view px-4 pt-6 text-center">
-            <div class="w-24 h-24 bg-yellow-100 rounded-full mx-auto mb-4 flex items-center justify-center text-4xl text-yellow-600 font-bold border-4 border-white shadow-lg">
-                <i class="fas fa-user"></i>
+        <div id="view-profile" class="page-view">
+            <div class="bg-gradient-to-b from-[#FBC02D] to-orange-400 pb-10 pt-10 px-4 rounded-b-[40px] text-center">
+                <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="w-24 h-24 rounded-full border-4 border-white shadow-lg mx-auto mb-4 bg-white">
+                <h2 class="text-xl font-bold text-white" id="profile-name">User Name</h2>
+                <p class="text-sm text-white/90" id="profile-phone">017xxxxxxxx</p>
+                <div class="mt-4 bg-white/20 inline-block px-4 py-1 rounded-full text-white text-xs font-bold backdrop-blur">Member</div>
             </div>
-            <h2 class="text-xl font-bold" id="profile-name">User</h2>
-            <p class="text-sm text-gray-500 mb-6" id="profile-email">email@example.com</p>
             
-            <div class="bg-white rounded-xl shadow-sm p-2 mb-6 text-left">
-                <div class="p-3 border-b flex justify-between"><span>User ID</span> <span class="font-mono text-xs text-gray-400">UID-123456</span></div>
-                <div class="p-3 border-b flex justify-between"><span>Joined</span> <span class="text-xs text-gray-400">Today</span></div>
-                <div class="p-3 flex justify-between"><span>Status</span> <span class="text-green-500 font-bold text-xs">Active</span></div>
+            <div class="px-4 -mt-8">
+                <div class="bg-white rounded-xl shadow-lg p-4">
+                    <div class="flex justify-between items-center border-b pb-3 mb-3">
+                        <span class="font-bold text-gray-700">Account Status</span>
+                        <span class="bg-red-100 text-red-600 px-2 py-0.5 rounded text-xs font-bold">Unverified</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-gray-700">Referral ID</span>
+                        <span class="font-mono text-gray-500 bg-gray-100 px-2 rounded">123456</span>
+                    </div>
+                </div>
             </div>
 
-            <button onclick="logout()" class="w-full bg-red-50 text-red-500 border border-red-100 py-3 rounded-xl font-bold">Logout</button>
+            <div class="p-4 space-y-3">
+                <button class="w-full bg-white border border-gray-200 p-3 rounded-xl flex justify-between items-center shadow-sm" onclick="logout()">
+                    <span class="font-bold text-red-500">Log Out</span>
+                    <i class="fas fa-sign-out-alt text-red-500"></i>
+                </button>
+            </div>
         </div>
+
     </div>
 
-    <!-- BOTTOM NAVIGATION -->
+    <!-- BOTTOM NAV -->
     <div id="bottom-nav" class="bottom-nav hidden">
-        <button onclick="navigate('home')" class="nav-btn active" id="nav-home"><i class="fas fa-home text-xl mb-1"></i><span class="text-[10px]">Home</span></button>
-        <button onclick="navigate('tasks')" class="nav-btn" id="nav-tasks"><i class="fas fa-list-check text-xl mb-1"></i><span class="text-[10px]">Tasks</span></button>
-        <div class="relative -top-6"><button onclick="navigate('wallet')" class="floating-fab hover:scale-105 transition"><i class="fas fa-wallet"></i></button></div>
-        <button onclick="navigate('shop')" class="nav-btn" id="nav-shop"><i class="fas fa-shopping-bag text-xl mb-1"></i><span class="text-[10px]">Shop</span></button>
-        <button onclick="navigate('profile')" class="nav-btn" id="nav-profile"><i class="fas fa-user-circle text-xl mb-1"></i><span class="text-[10px]">Profile</span></button>
+        <button onclick="navigate('home')" class="nav-btn active" id="nav-home">
+            <i class="fas fa-home text-xl mb-1"></i><span class="text-[10px] font-bold">Home</span>
+        </button>
+        <button onclick="navigate('tasks')" class="nav-btn" id="nav-tasks">
+            <i class="fas fa-play-circle text-xl mb-1"></i><span class="text-[10px] font-bold">Task</span>
+        </button>
+        <div class="relative -top-6">
+            <button onclick="navigate('wallet')" class="floating-fab">
+                <i class="fas fa-wallet"></i>
+            </button>
+            <div class="text-center text-[10px] font-bold text-gray-500 mt-1 absolute -bottom-5 left-1/2 transform -translate-x-1/2">Wallet</div>
+        </div>
+        <button onclick="Swal.fire('Shop', 'Coming Soon', 'info')" class="nav-btn" id="nav-shop">
+            <i class="fas fa-shopping-cart text-xl mb-1"></i><span class="text-[10px] font-bold">Shop</span>
+        </button>
+        <button onclick="navigate('profile')" class="nav-btn" id="nav-profile">
+            <i class="fas fa-user text-xl mb-1"></i><span class="text-[10px] font-bold">Profile</span>
+        </button>
     </div>
 
-    <!-- FIREBASE LOGIC -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithPhoneNumber, signInWithEmailAndPassword, createUserWithEmailAndPassword, RecaptchaVerifier, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, collection, getDocs, query, where, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    <script>
+        // State
+        let user = JSON.parse(localStorage.getItem('income_user')) || null;
+        let points = parseInt(localStorage.getItem('income_points')) || 0;
+        let balance = parseFloat(localStorage.getItem('income_balance')) || 0.00;
 
-        // YOUR CONFIGURATION (Provided by User)
-        const firebaseConfig = {
-            apiKey: "AIzaSyCkSCLRvZrFy-iR27jkiHANLG7Fjo5ComA",
-            authDomain: "income-app-d77b4.firebaseapp.com",
-            projectId: "income-app-d77b4",
-            storageBucket: "income-app-d77b4.firebasestorage.app",
-            messagingSenderId: "94252807897",
-            appId: "1:94252807897:web:f1a7af6213e1dee3d730c8"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        // Toggle Auth Screens
-        window.toggleAuth = (mode) => {
-            if(mode === 'phone') {
-                document.getElementById('email-section').classList.add('hidden');
-                document.getElementById('phone-section').classList.remove('hidden');
-            } else {
-                document.getElementById('phone-section').classList.add('hidden');
-                document.getElementById('email-section').classList.remove('hidden');
-            }
-        };
-
-        // Phone Login (May fail without billing)
-        window.recaptchaVerifier = null;
-        window.sendOTP = async () => {
-            const phone = document.getElementById('phone-input').value;
-            if(phone.length < 10) return Swal.fire('Error', 'Invalid Number', 'error');
-            
-            if(!window.recaptchaVerifier) {
-                window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { 'size': 'invisible' });
-            }
-            
-            try {
-                const confirmationResult = await signInWithPhoneNumber(auth, "+880"+phone, window.recaptchaVerifier);
-                const { value: code } = await Swal.fire({ 
-                    title: 'Enter OTP', 
-                    input: 'text', 
-                    confirmButtonColor: '#FBC02D',
-                    showCancelButton: true 
-                });
-                if(code) {
-                    const res = await confirmationResult.confirm(code);
-                    await checkUserDoc(res.user);
-                }
-            } catch(e) {
-                console.error(e);
-                // Handle Billing Error Gracefully
-                if(e.code && e.code.includes('billing-not-enabled')) {
-                    Swal.fire({
-                        title: 'Setup Required',
-                        text: 'Phone Auth requires billing setup in Firebase. Please use Email Login instead.',
-                        icon: 'warning',
-                        confirmButtonText: 'Use Email Login'
-                    }).then(() => toggleAuth('email'));
-                } else {
-                    Swal.fire('Error', e.message, 'error');
-                }
-            }
-        };
-
-        // Email Login (FREE & Recommended)
-        window.loginEmail = async () => {
-            const email = document.getElementById('email-input').value;
-            const pass = document.getElementById('pass-input').value;
-            
-            if(!email || !pass) return Swal.fire('Error', 'Please fill all fields', 'warning');
-
-            try {
-                await signInWithEmailAndPassword(auth, email, pass);
-            } catch(e) {
-                if(e.code.includes('not-found') || e.code.includes('invalid-credential')) {
-                    // Auto Register if user not found
-                    try {
-                        const cred = await createUserWithEmailAndPassword(auth, email, pass);
-                        await checkUserDoc(cred.user);
-                        Swal.fire('Welcome', 'Account Created Successfully!', 'success');
-                    } catch(re) { Swal.fire('Error', re.message, 'error'); }
-                } else { Swal.fire('Error', e.message, 'error'); }
-            }
-        };
-
-        // Create/Check User Database
-        async function checkUserDoc(user) {
-            const ref = doc(db, "users", user.uid);
-            const snap = await getDoc(ref);
-            if(!snap.exists()) {
-                await setDoc(ref, {
-                    name: user.email ? user.email.split('@')[0] : 'User',
-                    email: user.email || user.phoneNumber,
-                    balance: 0, 
-                    points: 50, 
-                    role: 'member',
-                    createdAt: new Date().toISOString()
-                });
-            }
-        }
-
-        // Real-time Data Sync
-        onAuthStateChanged(auth, async (user) => {
-            const loader = document.getElementById('loader');
-            if(user) {
-                const userRef = doc(db, "users", user.uid);
-                onSnapshot(userRef, (docSnap) => {
-                    const d = docSnap.data();
-                    if(d) {
-                        // Update UI Elements
-                        document.getElementById('wallet-balance').innerText = d.balance.toFixed(2);
-                        document.getElementById('header-balance').innerText = d.balance.toFixed(2);
-                        document.getElementById('header-points').innerText = d.points;
-                        document.getElementById('wallet-points').innerText = d.points;
-                        
-                        document.getElementById('home-name').innerText = d.name;
-                        document.getElementById('profile-name').innerText = d.name;
-                        document.getElementById('home-role').innerText = d.role.toUpperCase();
-                        document.getElementById('profile-email').innerText = d.email;
-
-                        // Admin Access Check
-                        const specialAccess = document.getElementById('special-access');
-                        if(d.role === 'admin') specialAccess.classList.remove('hidden');
-                        else specialAccess.classList.add('hidden');
-                    }
-                });
-
+        function init() {
+            if (user) {
                 document.getElementById('auth-view').classList.add('hidden');
                 document.getElementById('app-container').classList.remove('hidden');
                 document.getElementById('bottom-nav').classList.remove('hidden');
-                document.getElementById('bottom-nav').classList.add('flex');
-                navigate('home');
-            } else {
-                document.getElementById('auth-view').classList.remove('hidden');
-                document.getElementById('app-container').classList.add('hidden');
-                document.getElementById('bottom-nav').classList.add('hidden');
+                updateUI();
             }
-            loader.style.display = 'none';
-        });
+        }
 
-        // Task Function
-        window.doTask = async (amount) => {
-            Swal.fire({
-                title: 'Watching Ad...',
-                text: 'Please wait 5 seconds',
-                timer: 5000,
-                timerProgressBar: true,
-                didOpen: () => Swal.showLoading()
-            }).then(async () => {
-                const user = auth.currentUser;
-                if(user) {
-                    const ref = doc(db, "users", user.uid);
-                    await updateDoc(ref, { balance: increment(5.00) }); // Adding 5 Tk
-                    Swal.fire('Success', '5 Tk Added to Wallet!', 'success');
-                }
-            });
-        };
-
-        // Admin Function
-        window.adminAddBalance = async () => {
-            const email = document.getElementById('admin-user-email').value;
-            const amount = parseFloat(document.getElementById('admin-amount').value);
-            
-            if(!email || !amount) return Swal.fire('Error', 'Fill details', 'warning');
-
-            const q = query(collection(db, "users"), where("email", "==", email));
-            const snap = await getDocs(q);
-            
-            if(!snap.empty) {
-                const userDoc = snap.docs[0];
-                await updateDoc(doc(db, "users", userDoc.id), { balance: increment(amount) });
-                Swal.fire('Success', `Added ${amount} Tk to ${email}`, 'success');
-            } else {
-                Swal.fire('Error', 'User email not found', 'error');
+        function handleLogin() {
+            const phone = document.getElementById('login-phone').value;
+            if (phone.length < 11) {
+                Swal.fire('Error', 'Enter valid number', 'error');
+                return;
             }
-        };
+            user = { name: 'Demo User', phone: phone, id: Math.floor(100000 + Math.random() * 900000) };
+            localStorage.setItem('income_user', JSON.stringify(user));
+            
+            // Give Signup Bonus if new
+            if(!localStorage.getItem('income_points')) {
+                points = 50;
+                localStorage.setItem('income_points', points);
+            }
 
-        // Navigation Logic
-        window.navigate = (page) => {
+            init();
+        }
+
+        function updateUI() {
+            if(!user) return;
+            document.getElementById('drawer-name').innerText = user.name;
+            document.getElementById('drawer-id').innerText = user.id;
+            document.getElementById('profile-name').innerText = user.name;
+            document.getElementById('profile-phone').innerText = user.phone;
+            document.getElementById('user-points').innerText = points;
+            document.getElementById('user-balance').innerText = balance.toFixed(2);
+        }
+
+        function navigate(page) {
             document.querySelectorAll('.page-view').forEach(el => el.classList.remove('active'));
             document.getElementById('view-' + page).classList.add('active');
             
@@ -411,18 +338,35 @@
             if(['home','tasks','shop','profile'].includes(page)) {
                 document.getElementById('nav-' + page).classList.add('active');
             }
-        };
+            window.scrollTo(0,0);
+        }
 
-        window.logout = () => {
-            Swal.fire({
-                title: 'Logout?',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Yes'
-            }).then((res) => {
-                if(res.isConfirmed) signOut(auth);
-            });
-        };
+        function toggleDrawer() {
+            document.getElementById('drawer').classList.toggle('drawer-open');
+            document.getElementById('drawer-overlay').classList.toggle('hidden');
+        }
+
+        function doTask() {
+            let btn = event.target;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Wait 5s...';
+            btn.disabled = true;
+            setTimeout(() => {
+                points += 25;
+                localStorage.setItem('income_points', points);
+                updateUI();
+                Swal.fire('Success', 'You earned 25 points!', 'success');
+                btn.innerHTML = '<i class="fas fa-check"></i> Done';
+                btn.disabled = false;
+            }, 5000);
+        }
+
+        function logout() {
+            localStorage.removeItem('income_user');
+            location.reload();
+        }
+
+        // Initialize App
+        init();
     </script>
 </body>
 </html>
