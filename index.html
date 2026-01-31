@@ -5,638 +5,343 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Income Impact BD</title>
     
-    <!-- Tailwind CSS -->
+    <!-- Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- Three.js (For Wallet Coin Animation) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-
-        :root {
-            --primary: #FBC02D; /* The exact Yellow Color */
-            --primary-dark: #F57F17;
-            --dark-bg: #1a1a1a;
-            --light-bg: #f8f9fa;
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--light-bg);
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
-            overflow-x: hidden;
-            padding-bottom: 80px;
-        }
-
-        /* --- UTILITIES --- */
+        :root { --primary: #FBC02D; --light-bg: #f8f9fa; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--light-bg); -webkit-tap-highlight-color: transparent; user-select: none; overflow-x: hidden; padding-bottom: 80px; }
         .hide-scroll::-webkit-scrollbar { display: none; }
         .page-view { display: none; opacity: 0; animation: fadeIn 0.3s forwards; }
         .page-view.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* --- HEADER --- */
-        .app-header {
-            background: var(--primary);
-            padding: 15px 20px 25px;
-            border-bottom-left-radius: 30px;
-            border-bottom-right-radius: 30px;
-            color: white;
-            box-shadow: 0 4px 15px rgba(251, 192, 45, 0.3);
-            position: sticky;
-            top: 0;
-            z-index: 40;
-        }
-
-        /* --- DRAWER (SIDEBAR) --- */
-        .drawer-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 90; display: none;
-        }
-        .drawer {
-            position: fixed; top: 0; left: 0; height: 100%; width: 280px;
-            background: white; z-index: 100; transform: translateX(-100%);
-            transition: transform 0.3s ease;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-        }
+        
+        .app-header { background: var(--primary); padding: 15px 20px 25px; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; color: white; position: sticky; top: 0; z-index: 40; box-shadow: 0 4px 10px rgba(251, 192, 45, 0.3); }
+        .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 90; display: none; }
+        .drawer { position: fixed; top: 0; left: 0; height: 100%; width: 280px; background: white; z-index: 100; transform: translateX(-100%); transition: transform 0.3s ease; }
         .drawer.open { transform: translateX(0); }
-
-        /* --- SERVICES GRID --- */
-        .service-box {
-            background: white;
-            border-radius: 15px;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            transition: transform 0.1s;
-        }
+        
+        .service-box { background: white; border-radius: 15px; padding: 10px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: transform 0.1s; }
         .service-box:active { transform: scale(0.95); }
         .service-img { width: 35px; height: 35px; margin-bottom: 5px; object-fit: contain; }
-
-        /* --- WALLET 3D CONTAINER --- */
-        #coin-container { width: 100px; height: 100px; margin: 0 auto; }
-
-        /* --- BOTTOM NAV --- */
-        .bottom-nav {
-            position: fixed; bottom: 0; left: 0; width: 100%;
-            background: white; height: 70px;
-            display: flex; justify-content: space-between; align-items: flex-end;
-            padding: 0 10px; box-shadow: 0 -5px 15px rgba(0,0,0,0.05);
-            z-index: 50; border-top-left-radius: 20px; border-top-right-radius: 20px;
-        }
-        .nav-btn {
-            flex: 1; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; padding-bottom: 12px;
-            color: #bdbdbd; transition: 0.3s;
-        }
+        
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: white; height: 70px; display: flex; justify-content: space-between; align-items: flex-end; padding: 0 10px; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); z-index: 50; border-top-left-radius: 20px; border-top-right-radius: 20px; }
+        .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-bottom: 12px; color: #bdbdbd; transition: 0.3s; }
         .nav-btn.active { color: var(--primary); }
         .nav-btn i { font-size: 20px; margin-bottom: 4px; }
         .nav-btn span { font-size: 10px; font-weight: 600; }
-        
-        .floating-fab {
-            width: 55px; height: 55px; background: var(--primary);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            color: white; font-size: 22px; border: 4px solid white;
-            position: absolute; left: 50%; transform: translateX(-50%); bottom: 25px;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-        }
+        .floating-fab { width: 55px; height: 55px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 22px; border: 4px solid white; position: absolute; left: 50%; transform: translateX(-50%); bottom: 25px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body>
 
-    <!-- === SIDEBAR DRAWER === -->
+    <!-- LOADER -->
+    <div id="loader" class="fixed inset-0 bg-white z-[999] flex flex-col items-center justify-center">
+        <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-yellow-500 mb-4"></div>
+        <p class="text-gray-500 text-sm font-medium">Connecting...</p>
+    </div>
+
+    <!-- RECAPTCHA (INVISIBLE) -->
+    <div id="recaptcha-container"></div>
+
+    <!-- DRAWER -->
     <div id="drawer-overlay" class="drawer-overlay" onclick="toggleDrawer()"></div>
     <div id="drawer" class="drawer flex flex-col">
         <div class="h-40 bg-[#FBC02D] flex flex-col justify-end p-5 text-white">
-            <div class="w-16 h-16 bg-white rounded-full p-1 mb-3">
-                <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="w-full h-full rounded-full object-cover">
-            </div>
-            <h3 class="font-bold text-lg" id="drawer-name">User Name</h3>
-            <p class="text-xs opacity-80" id="drawer-phone">01xxxxxxxxx</p>
+            <div class="w-16 h-16 bg-white rounded-full p-1 mb-3"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="w-full h-full rounded-full object-cover"></div>
+            <h3 class="font-bold text-lg" id="drawer-name">Guest</h3>
+            <p class="text-xs opacity-80" id="drawer-phone">...</p>
         </div>
         <div class="flex-1 overflow-y-auto p-4 space-y-2">
-            <a href="#" onclick="navigate('home'); toggleDrawer()" class="flex items-center gap-4 p-3 bg-gray-50 rounded-lg text-gray-700 font-medium text-sm">
-                <i class="fas fa-home text-[#FBC02D]"></i> Home
-            </a>
-            <a href="#" onclick="navigate('profile'); toggleDrawer()" class="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg text-gray-600 font-medium text-sm">
-                <i class="fas fa-user-circle"></i> Profile
-            </a>
-            <a href="#" onclick="navigate('wallet'); toggleDrawer()" class="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg text-gray-600 font-medium text-sm">
-                <i class="fas fa-wallet"></i> Wallet
-            </a>
-            <a href="#" onclick="navigate('tasks'); toggleDrawer()" class="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg text-gray-600 font-medium text-sm">
-                <i class="fas fa-tasks"></i> Task History
-            </a>
-            <div class="border-t my-2"></div>
-            <a href="https://t.me/yourtelegram" target="_blank" class="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg text-gray-600 font-medium text-sm">
-                <i class="fab fa-telegram text-blue-500"></i> Telegram
-            </a>
-            <a href="#" onclick="logout()" class="flex items-center gap-4 p-3 hover:bg-red-50 text-red-500 rounded-lg font-medium text-sm">
-                <i class="fas fa-sign-out-alt"></i> Logout
-            </a>
+            <a href="#" onclick="navigate('home'); toggleDrawer()" class="flex items-center gap-4 p-3 bg-gray-50 rounded-lg text-gray-700 font-medium text-sm"><i class="fas fa-home text-[#FBC02D]"></i> Home</a>
+            <a href="#" onclick="navigate('profile'); toggleDrawer()" class="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg text-gray-600 font-medium text-sm"><i class="fas fa-user-circle"></i> Profile</a>
+            <a href="#" onclick="logout()" class="flex items-center gap-4 p-3 hover:bg-red-50 text-red-500 rounded-lg font-medium text-sm"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </div>
-        <div class="p-4 text-center text-xs text-gray-400">Version 9.6</div>
     </div>
 
-    <!-- === AUTH SCREEN === -->
+    <!-- AUTH SCREEN -->
     <div id="auth-view" class="fixed inset-0 bg-white z-[200] flex flex-col items-center justify-center p-6 hidden">
-        <div class="w-28 h-28 bg-[#FFF8E1] rounded-full flex items-center justify-center mb-6 border-2 border-[#FBC02D]">
-            <img src="https://cdn-icons-png.flaticon.com/512/295/295128.png" class="w-16">
-        </div>
-        <h1 class="text-3xl font-bold text-gray-800 mb-1">Income Impact</h1>
-        <p class="text-sm text-gray-500 mb-8">Login to start earning</p>
+        <div class="w-24 h-24 bg-yellow-50 rounded-full flex items-center justify-center mb-6 border-2 border-[#FBC02D]"><img src="https://cdn-icons-png.flaticon.com/512/295/295128.png" class="w-14"></div>
+        <h1 class="text-3xl font-bold text-gray-800 mb-1">Welcome</h1>
+        <p class="text-sm text-gray-500 mb-8">Login to continue earning</p>
 
-        <form id="login-form" class="w-full space-y-4">
+        <!-- PHONE LOGIN -->
+        <div id="phone-section" class="w-full space-y-4">
             <div class="relative">
-                <i class="fas fa-envelope absolute left-4 top-4 text-gray-400"></i>
-                <input type="email" id="auth-email" placeholder="Email Address" class="w-full bg-gray-50 border border-gray-200 p-3 pl-10 rounded-xl outline-none focus:border-[#FBC02D] transition" required>
+                <span class="absolute left-4 top-3.5 text-gray-500 font-bold text-lg">+880</span>
+                <input type="tel" id="phone-input" placeholder="17xxxxxxxx" class="w-full bg-gray-50 border border-gray-200 p-3.5 pl-16 rounded-xl outline-none focus:border-[#FBC02D] font-bold text-lg tracking-wider" maxlength="10">
             </div>
-            <div class="relative">
-                <i class="fas fa-lock absolute left-4 top-4 text-gray-400"></i>
-                <input type="password" id="auth-pass" placeholder="Password" class="w-full bg-gray-50 border border-gray-200 p-3 pl-10 rounded-xl outline-none focus:border-[#FBC02D] transition" required>
-            </div>
-            <button type="submit" class="w-full bg-[#FBC02D] text-white py-4 rounded-xl font-bold shadow-lg text-lg hover:shadow-xl transition transform active:scale-95">LOGIN</button>
-        </form>
+            <button onclick="sendOTP()" class="w-full bg-[#FBC02D] text-white py-3.5 rounded-xl font-bold shadow-lg active:scale-95 transition">SEND OTP</button>
+            <p class="text-center text-xs text-gray-400 cursor-pointer hover:text-[#FBC02D]" onclick="toggleAuth('email')">Or login with Email</p>
+        </div>
+
+        <!-- EMAIL LOGIN -->
+        <div id="email-section" class="w-full space-y-4 hidden">
+            <input type="email" id="email-input" placeholder="Email Address" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none focus:border-[#FBC02D]">
+            <input type="password" id="pass-input" placeholder="Password" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none focus:border-[#FBC02D]">
+            <button onclick="loginEmail()" class="w-full bg-[#FBC02D] text-white py-3.5 rounded-xl font-bold shadow-lg active:scale-95 transition">LOGIN / REGISTER</button>
+            <p class="text-center text-xs text-gray-400 cursor-pointer hover:text-[#FBC02D]" onclick="toggleAuth('phone')">Or login with Phone</p>
+        </div>
     </div>
 
-    <!-- === MAIN APP === -->
+    <!-- MAIN APP -->
     <div id="app-container" class="hidden">
-
-        <!-- *** HOME VIEW *** -->
+        <!-- HOME -->
         <div id="view-home" class="page-view active">
-            <!-- Header -->
             <div class="app-header">
                 <div class="flex justify-between items-center mb-4">
                     <div class="flex items-center gap-3">
                         <button onclick="toggleDrawer()"><i class="fas fa-bars text-xl"></i></button>
-                        <div>
-                            <h2 class="font-bold text-lg leading-tight">Income Impact</h2>
-                            <p class="text-[10px] opacity-90">Start Earning Today</p>
-                        </div>
+                        <div><h2 class="font-bold text-lg leading-tight">Income App</h2><p class="text-[10px] opacity-90">Daily Earning</p></div>
                     </div>
-                    <div class="relative cursor-pointer">
-                        <i class="fas fa-bell text-xl"></i>
-                        <span class="absolute -top-1 -right-1 bg-red-600 text-[10px] w-4 h-4 rounded-full flex items-center justify-center border border-[#FBC02D]">3</span>
-                    </div>
+                    <div class="relative"><i class="fas fa-bell text-xl"></i><span class="absolute -top-1 -right-1 bg-red-600 text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center border border-white">2</span></div>
                 </div>
-                
-                <!-- Notice Marquee -->
-                <div class="bg-white/20 rounded-lg p-2 flex items-center backdrop-blur-sm">
-                    <i class="fas fa-bullhorn text-white mr-2"></i>
-                    <marquee class="text-xs font-medium">স্বাগতম! আমাদের অ্যাপে কাজ করে প্রতিদিন ৫০০ টাকা আয় করুন। পেমেন্ট ১০০% নিশ্চিত।</marquee>
-                </div>
+                <div class="bg-white/20 rounded-lg p-2 flex items-center backdrop-blur-sm"><i class="fas fa-bullhorn text-white mr-2"></i><marquee class="text-xs font-medium">Welcome to our official earning app. Work freely!</marquee></div>
             </div>
-
             <div class="px-4 -mt-6 relative z-10 pb-4">
-                <!-- Slider -->
                 <div class="flex overflow-x-auto gap-3 hide-scroll mb-5">
-                    <img src="https://via.placeholder.com/300x150/FFB300/FFFFFF?text=Premium+Bonus" class="rounded-xl w-72 shadow-md">
-                    <img src="https://via.placeholder.com/300x150/1a1a1a/FFFFFF?text=Refer+and+Earn" class="rounded-xl w-72 shadow-md">
+                    <img src="https://via.placeholder.com/300x150/FFB300/FFFFFF?text=Bonus+Offer" class="rounded-xl w-72 shadow-md">
+                    <img src="https://via.placeholder.com/300x150/1a1a1a/FFFFFF?text=Refer+Win" class="rounded-xl w-72 shadow-md">
                 </div>
-
-                <!-- Services Grid (All Options) -->
                 <h3 class="font-bold text-gray-800 mb-3 border-l-4 border-[#FBC02D] pl-2">Services</h3>
                 <div class="grid grid-cols-4 gap-3 mb-6">
-                    <div class="service-box" onclick="showToast('Recharge coming soon')">
-                        <img src="https://cdn-icons-png.flaticon.com/512/2331/2331941.png" class="service-img">
-                        <span class="text-[10px] font-bold text-gray-600">Recharge</span>
-                    </div>
-                    <div class="service-box" onclick="showToast('Drive offer loading...')">
-                        <img src="https://cdn-icons-png.flaticon.com/512/3659/3659899.png" class="service-img">
-                        <span class="text-[10px] font-bold text-gray-600">Drive</span>
-                    </div>
-                    <div class="service-box" onclick="navigate('shop')">
-                        <img src="https://cdn-icons-png.flaticon.com/512/3081/3081840.png" class="service-img">
-                        <span class="text-[10px] font-bold text-gray-600">Reselling</span>
-                    </div>
-                    <div class="service-box" onclick="navigate('tasks')">
-                        <img src="https://cdn-icons-png.flaticon.com/512/2936/2936669.png" class="service-img">
-                        <span class="text-[10px] font-bold text-gray-600">Micro Job</span>
-                    </div>
-                    <div class="service-box" onclick="navigate('tasks')">
-                        <img src="https://cdn-icons-png.flaticon.com/512/1968/1968666.png" class="service-img">
-                        <span class="text-[10px] font-bold text-gray-600">Ads View</span>
-                    </div>
-                    <div class="service-box">
-                        <img src="https://cdn-icons-png.flaticon.com/512/1603/1603847.png" class="service-img">
-                        <span class="text-[10px] font-bold text-gray-600">Leaderboard</span>
-                    </div>
-                    <div class="service-box">
-                        <img src="https://cdn-icons-png.flaticon.com/512/2910/2910793.png" class="service-img">
-                        <span class="text-[10px] font-bold text-gray-600">Typing</span>
-                    </div>
-                    <div class="service-box" onclick="claimBonus()">
-                        <img src="https://cdn-icons-png.flaticon.com/512/5551/5551368.png" class="service-img">
-                        <span class="text-[10px] font-bold text-gray-600">Bonus</span>
-                    </div>
-                </div>
-
-                <!-- Premium Products -->
-                <div class="flex justify-between items-center mb-3">
-                    <h3 class="font-bold text-gray-800">Premium Products</h3>
-                    <span class="text-xs text-[#FBC02D] font-bold" onclick="navigate('shop')">See All</span>
-                </div>
-                <div class="flex overflow-x-auto gap-3 hide-scroll pb-2">
-                    <div class="min-w-[140px] bg-white rounded-xl shadow-sm p-2 border border-gray-100">
-                        <div class="h-28 bg-gray-50 rounded-lg mb-2 flex items-center justify-center">
-                            <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200" class="h-full object-contain">
-                        </div>
-                        <h4 class="text-xs font-bold text-gray-700 truncate">Smart Watch</h4>
-                        <div class="flex justify-between items-center mt-1">
-                            <span class="text-sm font-bold text-orange-500">৳1200</span>
-                            <i class="fas fa-plus-circle text-[#FBC02D]"></i>
-                        </div>
-                    </div>
-                    <!-- Mock Product 2 -->
-                    <div class="min-w-[140px] bg-white rounded-xl shadow-sm p-2 border border-gray-100">
-                        <div class="h-28 bg-gray-50 rounded-lg mb-2 flex items-center justify-center">
-                            <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200" class="h-full object-contain">
-                        </div>
-                        <h4 class="text-xs font-bold text-gray-700 truncate">Headphone</h4>
-                        <div class="flex justify-between items-center mt-1">
-                            <span class="text-sm font-bold text-orange-500">৳850</span>
-                            <i class="fas fa-plus-circle text-[#FBC02D]"></i>
-                        </div>
-                    </div>
+                    <div class="service-box" onclick="showToast('Recharge coming soon')"><img src="https://cdn-icons-png.flaticon.com/512/2331/2331941.png" class="service-img"><span class="text-[10px] font-bold text-gray-600">Recharge</span></div>
+                    <div class="service-box" onclick="showToast('Drive offer loading...')"><img src="https://cdn-icons-png.flaticon.com/512/3659/3659899.png" class="service-img"><span class="text-[10px] font-bold text-gray-600">Drive</span></div>
+                    <div class="service-box" onclick="navigate('shop')"><img src="https://cdn-icons-png.flaticon.com/512/3081/3081840.png" class="service-img"><span class="text-[10px] font-bold text-gray-600">Shop</span></div>
+                    <div class="service-box" onclick="navigate('tasks')"><img src="https://cdn-icons-png.flaticon.com/512/2936/2936669.png" class="service-img"><span class="text-[10px] font-bold text-gray-600">Tasks</span></div>
+                    <div class="service-box" onclick="navigate('tasks')"><img src="https://cdn-icons-png.flaticon.com/512/1968/1968666.png" class="service-img"><span class="text-[10px] font-bold text-gray-600">Ads</span></div>
+                    <div class="service-box"><img src="https://cdn-icons-png.flaticon.com/512/1603/1603847.png" class="service-img"><span class="text-[10px] font-bold text-gray-600">Top</span></div>
+                    <div class="service-box"><img src="https://cdn-icons-png.flaticon.com/512/2910/2910793.png" class="service-img"><span class="text-[10px] font-bold text-gray-600">Typing</span></div>
+                    <div class="service-box" onclick="claimBonus()"><img src="https://cdn-icons-png.flaticon.com/512/5551/5551368.png" class="service-img"><span class="text-[10px] font-bold text-gray-600">Bonus</span></div>
                 </div>
             </div>
         </div>
 
-        <!-- *** TASKS VIEW *** -->
-        <div id="view-tasks" class="page-view px-4 pt-4">
-            <h2 class="text-xl font-bold text-gray-800 mb-4 text-center">Earning Tasks</h2>
-            
-            <div class="flex bg-white rounded-full p-1 mb-4 shadow-sm">
-                <button class="flex-1 py-2 text-sm font-bold bg-[#FBC02D] text-white rounded-full shadow">Visit Task</button>
-                <button class="flex-1 py-2 text-sm font-bold text-gray-500">Video Task</button>
-            </div>
-
-            <div class="space-y-3">
-                <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-blue-500 flex justify-between items-center">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-blue-500"><i class="fas fa-globe"></i></div>
-                        <div>
-                            <h4 class="font-bold text-sm">Visit Website</h4>
-                            <p class="text-[10px] text-gray-500">Wait 30 seconds</p>
-                        </div>
-                    </div>
-                    <span class="font-bold text-green-600 text-sm">+50 Pts</span>
-                </div>
-                <!-- Repeat for demo -->
-                <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-red-500 flex justify-between items-center">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-red-50 rounded-full flex items-center justify-center text-red-500"><i class="fab fa-youtube"></i></div>
-                        <div>
-                            <h4 class="font-bold text-sm">Watch Video</h4>
-                            <p class="text-[10px] text-gray-500">Wait 60 seconds</p>
-                        </div>
-                    </div>
-                    <span class="font-bold text-green-600 text-sm">+100 Pts</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- *** WALLET VIEW *** -->
-        <div id="view-wallet" class="page-view px-4 pt-6 bg-white min-h-screen">
+        <!-- WALLET -->
+        <div id="view-wallet" class="page-view px-4 pt-6 min-h-screen bg-white">
             <h2 class="text-center font-bold text-xl mb-4">My Wallet</h2>
-            
-            <!-- 3D Coin -->
-            <div id="coin-container" class="mb-4"></div>
-
-            <div class="bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl p-6 text-white shadow-xl mb-6 relative overflow-hidden">
+            <div id="coin-container" class="mb-4 h-24 w-full flex justify-center"></div>
+            <div class="bg-gray-900 rounded-2xl p-6 text-white shadow-xl mb-6 relative overflow-hidden">
                 <div class="absolute -right-5 -top-5 w-24 h-24 bg-white opacity-10 rounded-full blur-xl"></div>
-                <p class="text-sm opacity-70">Current Balance</p>
+                <p class="text-sm opacity-70">Balance</p>
                 <h1 class="text-4xl font-bold mt-1">৳ <span id="wallet-balance">0.00</span></h1>
-                <div class="flex gap-4 mt-3">
-                    <span class="text-xs bg-white/20 px-2 py-1 rounded text-yellow-400"><i class="fas fa-star"></i> <span id="wallet-points">0</span> Pts</span>
-                </div>
+                <span class="text-xs bg-white/20 px-2 py-1 rounded text-yellow-400 mt-2 inline-block"><i class="fas fa-star"></i> <span id="wallet-points">0</span> Pts</span>
             </div>
-
             <div class="grid grid-cols-2 gap-4 mb-6">
-                <button onclick="showToast('Withdraw Request Sent')" class="bg-green-50 text-green-700 py-3 rounded-xl font-bold shadow-sm border border-green-100">
-                    <i class="fas fa-arrow-down mr-1"></i> Withdraw
-                </button>
-                <button onclick="showToast('Points Converted')" class="bg-blue-50 text-blue-700 py-3 rounded-xl font-bold shadow-sm border border-blue-100">
-                    <i class="fas fa-exchange-alt mr-1"></i> Convert
-                </button>
-            </div>
-
-            <h3 class="font-bold text-gray-700 mb-3 text-sm border-b pb-2">Recent Transactions</h3>
-            <div class="space-y-2">
-                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-600 text-xs"><i class="fas fa-plus"></i></div>
-                        <div>
-                            <p class="text-xs font-bold">Daily Bonus</p>
-                            <p class="text-[9px] text-gray-400">Today</p>
-                        </div>
-                    </div>
-                    <span class="text-green-600 font-bold text-xs">+50 Pts</span>
-                </div>
+                <button class="bg-green-50 text-green-700 py-3 rounded-xl font-bold shadow-sm border border-green-100">Withdraw</button>
+                <button class="bg-blue-50 text-blue-700 py-3 rounded-xl font-bold shadow-sm border border-blue-100">Convert</button>
             </div>
         </div>
 
-        <!-- *** SHOP VIEW *** -->
-        <div id="view-shop" class="page-view px-4 pt-4">
-            <!-- Search -->
-            <div class="relative mb-4">
-                <input type="text" placeholder="Search product..." class="w-full bg-white border border-gray-200 py-3 px-10 rounded-full text-sm outline-none shadow-sm focus:border-[#FBC02D]">
-                <i class="fas fa-search absolute left-4 top-3.5 text-gray-400"></i>
-            </div>
-
-            <!-- Categories -->
-            <div class="flex gap-3 overflow-x-auto hide-scroll mb-4">
-                <button class="bg-gray-800 text-white px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap">All</button>
-                <button class="bg-white border border-gray-200 text-gray-600 px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap">Gadgets</button>
-                <button class="bg-white border border-gray-200 text-gray-600 px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap">Fashion</button>
-            </div>
-
-            <!-- Grid -->
-            <div class="grid grid-cols-2 gap-3" id="shop-grid">
-                <!-- Products injected here -->
+        <!-- TASKS -->
+        <div id="view-tasks" class="page-view px-4 pt-6">
+            <h2 class="font-bold text-xl mb-4">Tasks</h2>
+            <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-red-500 flex justify-between items-center mb-3">
+                <div class="flex gap-3 items-center"><div class="w-10 h-10 bg-red-50 rounded-full flex justify-center items-center text-red-500"><i class="fab fa-youtube"></i></div><div><h4 class="font-bold text-sm">Watch Video</h4><p class="text-[10px] text-gray-500">60 Seconds</p></div></div>
+                <span class="font-bold text-green-600 text-sm">+50 Pts</span>
             </div>
         </div>
 
-        <!-- *** PROFILE VIEW *** -->
+        <!-- SHOP -->
+        <div id="view-shop" class="page-view px-4 pt-6">
+            <h2 class="font-bold text-xl mb-4">Shop</h2>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-white p-2 rounded-xl shadow-sm border"><div class="h-32 bg-gray-50 rounded mb-2 flex items-center justify-center"><img src="https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=200" class="h-full object-contain"></div><h4 class="text-xs font-bold">Smart Watch</h4><span class="text-sm font-bold text-[#FBC02D]">৳1200</span></div>
+                <div class="bg-white p-2 rounded-xl shadow-sm border"><div class="h-32 bg-gray-50 rounded mb-2 flex items-center justify-center"><img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200" class="h-full object-contain"></div><h4 class="text-xs font-bold">Headphone</h4><span class="text-sm font-bold text-[#FBC02D]">৳850</span></div>
+            </div>
+        </div>
+
+        <!-- PROFILE -->
         <div id="view-profile" class="page-view">
-            <div class="bg-[#FBC02D] pt-10 pb-16 rounded-b-[40px] shadow-lg relative text-center">
-                <div class="w-24 h-24 bg-white rounded-full mx-auto p-1 shadow-lg mb-3 border-4 border-white/50">
-                    <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="w-full h-full rounded-full object-cover">
-                </div>
-                <h2 class="text-xl font-bold text-white" id="profile-name">Loading...</h2>
+            <div class="bg-[#FBC02D] pt-10 pb-16 rounded-b-[40px] shadow-lg text-center">
+                <div class="w-24 h-24 bg-white rounded-full mx-auto p-1 mb-3"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="w-full h-full rounded-full object-cover"></div>
+                <h2 class="text-xl font-bold text-white" id="profile-name">Guest</h2>
                 <p class="text-white/80 text-sm" id="profile-email">...</p>
-                <div class="absolute top-4 right-4 text-white bg-white/20 p-2 rounded-full cursor-pointer" onclick="logout()"><i class="fas fa-power-off"></i></div>
             </div>
-
             <div class="px-4 -mt-8 relative z-10 pb-24 space-y-3">
-                <div class="bg-white p-4 rounded-xl shadow-sm flex items-center gap-4 cursor-pointer">
-                    <div class="w-10 h-10 bg-blue-50 text-blue-500 rounded-lg flex items-center justify-center"><i class="fas fa-user-edit"></i></div>
-                    <span class="font-bold text-gray-700 text-sm flex-1">Edit Profile</span>
-                    <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
-                </div>
-                <div class="bg-white p-4 rounded-xl shadow-sm flex items-center gap-4 cursor-pointer">
-                    <div class="w-10 h-10 bg-purple-50 text-purple-500 rounded-lg flex items-center justify-center"><i class="fas fa-box"></i></div>
-                    <span class="font-bold text-gray-700 text-sm flex-1">My Orders</span>
-                    <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
-                </div>
-                <div class="bg-white p-4 rounded-xl shadow-sm flex items-center gap-4 cursor-pointer">
-                    <div class="w-10 h-10 bg-green-50 text-green-500 rounded-lg flex items-center justify-center"><i class="fab fa-whatsapp"></i></div>
-                    <span class="font-bold text-gray-700 text-sm flex-1">Support</span>
-                    <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
-                </div>
-                <!-- Admin Panel (Conditional) -->
-                <div id="admin-link" class="bg-gray-800 p-4 rounded-xl shadow-sm flex items-center gap-4 cursor-pointer hidden">
-                    <div class="w-10 h-10 bg-gray-700 text-white rounded-lg flex items-center justify-center"><i class="fas fa-shield-alt"></i></div>
-                    <span class="font-bold text-white text-sm flex-1">Admin Panel</span>
-                    <i class="fas fa-chevron-right text-gray-500 text-xs"></i>
-                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm flex gap-4 items-center"><i class="fas fa-user-edit text-blue-500 bg-blue-50 p-2 rounded"></i> <span class="flex-1 font-bold text-gray-700 text-sm">Edit Profile</span> <i class="fas fa-chevron-right text-gray-300"></i></div>
+                <div class="bg-white p-4 rounded-xl shadow-sm flex gap-4 items-center"><i class="fas fa-box text-purple-500 bg-purple-50 p-2 rounded"></i> <span class="flex-1 font-bold text-gray-700 text-sm">Orders</span> <i class="fas fa-chevron-right text-gray-300"></i></div>
             </div>
         </div>
-
     </div>
 
-    <!-- === BOTTOM NAVIGATION === -->
+    <!-- NAV -->
     <div id="bottom-nav" class="bottom-nav hidden">
-        <button onclick="navigate('home')" class="nav-btn active" id="nav-home">
-            <i class="fas fa-home"></i> <span>Home</span>
-        </button>
-        <button onclick="navigate('tasks')" class="nav-btn" id="nav-tasks">
-            <i class="fas fa-tasks"></i> <span>Tasks</span>
-        </button>
-        
-        <div class="relative -top-6">
-            <button onclick="navigate('wallet')" class="floating-fab shadow-lg active:scale-95 transition">
-                <i class="fas fa-wallet"></i>
-            </button>
-        </div>
-
-        <button onclick="navigate('shop')" class="nav-btn" id="nav-shop">
-            <i class="fas fa-shopping-bag"></i> <span>Shop</span>
-        </button>
-        <button onclick="navigate('profile')" class="nav-btn" id="nav-profile">
-            <i class="fas fa-user"></i> <span>Profile</span>
-        </button>
+        <button onclick="navigate('home')" class="nav-btn active" id="nav-home"><i class="fas fa-home"></i><span>Home</span></button>
+        <button onclick="navigate('tasks')" class="nav-btn" id="nav-tasks"><i class="fas fa-tasks"></i><span>Tasks</span></button>
+        <div class="relative -top-6"><button onclick="navigate('wallet')" class="floating-fab"><i class="fas fa-wallet"></i></button></div>
+        <button onclick="navigate('shop')" class="nav-btn" id="nav-shop"><i class="fas fa-shopping-bag"></i><span>Shop</span></button>
+        <button onclick="navigate('profile')" class="nav-btn" id="nav-profile"><i class="fas fa-user"></i><span>Profile</span></button>
     </div>
 
-    <!-- === FIREBASE LOGIC === -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithPhoneNumber, signInWithEmailAndPassword, createUserWithEmailAndPassword, RecaptchaVerifier, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // YOUR CONFIGURATION
+        // 🔥🔥 YOUR FIREBASE CONFIGURATION HERE 🔥🔥
         const firebaseConfig = {
             apiKey: "AIzaSyCQhQdXUzavx0Y6uXOtJhHPrONb-sncxh4",
-            authDomain: "md-ebrahim-dc82c.firebaseapp.com",
-            databaseURL: "https://md-ebrahim-dc82c-default-rtdb.firebaseio.com",
-            projectId: "md-ebrahim-dc82c",
-            storageBucket: "md-ebrahim-dc82c.firebasestorage.app",
-            messagingSenderId: "727897545547",
-            appId: "1:727897545547:web:7988fbaa32d4d4bb6926ce",
-            measurementId: "G-NRFDT42MKZ"
+            authDomain: "income-app-d77b4.firebaseapp.com",
+            projectId: "income-app-d77b4",
+            storageBucket: "income-app-d77b4.firebasestorage.app",
+            messagingSenderId: "94252807897",
+            appId: "1:94252807897:web:f1a7af6213e1dee3d730c8"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        let app, auth, db;
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            auth.useDeviceLanguage();
+        } catch(e) { console.error("Firebase Init Error:", e); }
 
-        // --- NAVIGATION ---
+        // AUTH TOGGLE
+        window.toggleAuth = (method) => {
+            if(method === 'email') {
+                document.getElementById('phone-section').classList.add('hidden');
+                document.getElementById('email-section').classList.remove('hidden');
+            } else {
+                document.getElementById('email-section').classList.add('hidden');
+                document.getElementById('phone-section').classList.remove('hidden');
+            }
+        };
+
+        // PHONE LOGIN
+        window.recaptchaVerifier = null;
+        window.sendOTP = async () => {
+            const phone = document.getElementById('phone-input').value;
+            if(phone.length < 10) return Swal.fire('Error', 'Invalid Number', 'error');
+            const fullPhone = "+880" + phone;
+
+            if(!window.recaptchaVerifier) {
+                window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { 'size': 'invisible' });
+            }
+
+            Swal.fire({ title: 'Sending OTP...', didOpen: () => Swal.showLoading() });
+
+            try {
+                window.confirmationResult = await signInWithPhoneNumber(auth, fullPhone, window.recaptchaVerifier);
+                Swal.close();
+                const { value: code } = await Swal.fire({
+                    title: 'Enter OTP',
+                    input: 'text',
+                    inputLabel: 'Check SMS for code',
+                    confirmButtonText: 'Verify',
+                    confirmButtonColor: '#FBC02D',
+                    showCancelButton: true
+                });
+
+                if (code) {
+                    Swal.fire({ title: 'Verifying...', didOpen: () => Swal.showLoading() });
+                    const res = await window.confirmationResult.confirm(code);
+                    await createUserDoc(res.user);
+                    Swal.close();
+                }
+            } catch (error) {
+                Swal.fire('Error', error.message, 'error');
+                if(window.recaptchaVerifier) window.recaptchaVerifier.render().then(widgetId => grecaptcha.reset(widgetId));
+            }
+        };
+
+        // EMAIL LOGIN
+        window.loginEmail = async () => {
+            const email = document.getElementById('email-input').value;
+            const pass = document.getElementById('pass-input').value;
+            Swal.fire({ title: 'Processing...', didOpen: () => Swal.showLoading() });
+
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+                Swal.close();
+            } catch (error) {
+                if(error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+                    try {
+                        const cred = await createUserWithEmailAndPassword(auth, email, pass);
+                        await createUserDoc(cred.user);
+                    } catch (e) { Swal.fire('Error', e.message, 'error'); }
+                } else { Swal.fire('Error', error.message, 'error'); }
+            }
+        };
+
+        // AUTO DB CREATE
+        async function createUserDoc(user) {
+            const userRef = doc(db, "users", user.uid);
+            const snap = await getDoc(userRef);
+            if(!snap.exists()){
+                await setDoc(userRef, {
+                    name: user.phoneNumber || user.email.split('@')[0],
+                    email: user.email || user.phoneNumber,
+                    balance: 0, points: 50, role: 'member',
+                    createdAt: new Date().toISOString()
+                });
+            }
+        }
+
+        // AUTH STATE
+        onAuthStateChanged(auth, async (user) => {
+            const loader = document.getElementById('loader');
+            if(user) {
+                const userRef = doc(db, "users", user.uid);
+                const snap = await getDoc(userRef);
+                if(!snap.exists()) await createUserDoc(user);
+
+                onSnapshot(userRef, (doc) => {
+                    const d = doc.data();
+                    if(d) {
+                        ['wallet-balance'].forEach(id => document.getElementById(id).innerText = d.balance.toFixed(2));
+                        document.getElementById('wallet-points').innerText = d.points;
+                        ['drawer-name', 'profile-name'].forEach(id => document.getElementById(id).innerText = d.name);
+                        ['drawer-phone', 'profile-email'].forEach(id => document.getElementById(id).innerText = d.email);
+                    }
+                });
+
+                document.getElementById('auth-view').classList.add('hidden');
+                document.getElementById('app-container').classList.remove('hidden');
+                document.getElementById('bottom-nav').classList.remove('hidden');
+                document.getElementById('bottom-nav').classList.add('flex');
+                navigate('home');
+            } else {
+                document.getElementById('auth-view').classList.remove('hidden');
+                document.getElementById('app-container').classList.add('hidden');
+                document.getElementById('bottom-nav').classList.add('hidden');
+            }
+            loader.style.display = 'none';
+        });
+
+        // NAVIGATION & UTILS
         window.navigate = (page) => {
             document.querySelectorAll('.page-view').forEach(el => el.classList.remove('active'));
             document.getElementById('view-' + page).classList.add('active');
-
             document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
-            if(page !== 'wallet') document.getElementById('nav-' + page).classList.add('active');
-
+            if(page !== 'wallet') document.getElementById('nav-' + page)?.classList.add('active');
             if(page === 'wallet') initThreeJS();
-            if(page === 'shop') loadShopItems();
         }
-
-        window.toggleDrawer = () => {
-            document.getElementById('drawer').classList.toggle('open');
-            const overlay = document.getElementById('drawer-overlay');
-            overlay.style.display = overlay.style.display === 'block' ? 'none' : 'block';
-        }
-
-        window.showToast = (msg) => {
-            const Toast = Swal.mixin({
-                toast: true, position: 'top-end', showConfirmButton: false, timer: 3000,
-                timerProgressBar: true, didOpen: (toast) => {
-                    toast.onmouseenter = Swal.stopTimer; toast.onmouseleave = Swal.resumeTimer;
-                }
-            });
-            Toast.fire({ icon: 'info', title: msg });
-        }
-
-        // --- AUTH & AUTO-HEALING ---
-        const authView = document.getElementById('auth-view');
-        const appContainer = document.getElementById('app-container');
-        const bottomNav = document.getElementById('bottom-nav');
-
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('auth-email').value;
-            const pass = document.getElementById('auth-pass').value;
-            
-            Swal.fire({ title: 'Please wait...', didOpen: () => Swal.showLoading() });
-
-            try {
-                // Try Login
-                await signInWithEmailAndPassword(auth, email, pass);
-                Swal.close();
-            } catch (err) {
-                // If user doesn't exist, create account
-                if(err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential' || err.code === 'auth/invalid-login-credentials') {
-                    try {
-                        const cred = await createUserWithEmailAndPassword(auth, email, pass);
-                        // Auto-create Firestore Document
-                        await setDoc(doc(db, "users", cred.user.uid), {
-                            name: email.split('@')[0],
-                            email: email,
-                            balance: 0.00,
-                            points: 50,
-                            role: 'member',
-                            affiliate_id: Math.floor(100000 + Math.random() * 900000),
-                            createdAt: new Date().toISOString()
-                        });
-                        Swal.fire('Success', 'Account Created & Logged In!', 'success');
-                    } catch (regErr) {
-                        Swal.fire('Error', regErr.message, 'error');
-                    }
-                } else {
-                    Swal.fire('Error', err.message, 'error');
-                }
-            }
-        });
-
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                // Ensure Database Doc Exists (Auto-Healing)
-                const userRef = doc(db, "users", user.uid);
-                const snap = await getDoc(userRef);
-                
-                if (!snap.exists()) {
-                    await setDoc(userRef, {
-                        name: user.email.split('@')[0],
-                        email: user.email,
-                        balance: 0.00,
-                        points: 0,
-                        role: 'member',
-                        createdAt: new Date().toISOString()
-                    });
-                }
-
-                // Listen for updates
-                onSnapshot(userRef, (doc) => {
-                    const data = doc.data();
-                    updateUI(data);
-                });
-
-                authView.classList.add('hidden');
-                appContainer.classList.remove('hidden');
-                bottomNav.classList.remove('hidden');
-                bottomNav.classList.add('flex');
-                navigate('home');
-            } else {
-                authView.classList.remove('hidden');
-                appContainer.classList.add('hidden');
-                bottomNav.classList.add('hidden');
-                bottomNav.classList.remove('flex');
-            }
-        });
-
-        function updateUI(data) {
-            if(!data) return;
-            // Home
-            document.getElementById('home-balance').innerText = data.balance.toFixed(2);
-            // Wallet
-            document.getElementById('wallet-balance').innerText = data.balance.toFixed(2);
-            document.getElementById('wallet-points').innerText = data.points;
-            // Profile & Drawer
-            ['profile-name', 'drawer-name'].forEach(id => document.getElementById(id).innerText = data.name);
-            ['profile-email', 'drawer-phone'].forEach(id => document.getElementById(id).innerText = data.email);
-            
-            if(data.role === 'admin') document.getElementById('admin-link').classList.remove('hidden');
-        }
-
+        window.toggleDrawer = () => document.getElementById('drawer').classList.toggle('open');
         window.logout = () => signOut(auth);
-
-        // --- EXTRAS ---
-        function loadShopItems() {
-            const grid = document.getElementById('shop-grid');
-            if(grid.innerHTML.trim() !== "") return;
-            
-            const products = [
-                {n: "Smart Watch", p: 1500, i: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=300"},
-                {n: "AirPods Pro", p: 950, i: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=300"},
-                {n: "Gaming Mouse", p: 450, i: "https://images.unsplash.com/photo-1527814050087-3793815479db?w=300"},
-                {n: "Power Bank", p: 1200, i: "https://images.unsplash.com/photo-1609592425026-64195156642d?w=300"}
-            ];
-            
-            grid.innerHTML = products.map(p => `
-                <div class="bg-white rounded-xl shadow-sm overflow-hidden p-2 border border-gray-100">
-                    <div class="h-32 bg-gray-50 rounded-lg mb-2 flex items-center justify-center">
-                        <img src="${p.i}" class="h-full object-contain mix-blend-multiply">
-                    </div>
-                    <h4 class="text-xs font-bold text-gray-700 truncate">${p.n}</h4>
-                    <div class="flex justify-between items-center mt-1">
-                        <span class="text-sm font-bold text-[#FBC02D]">৳${p.p}</span>
-                        <i class="fas fa-plus-circle text-gray-800"></i>
-                    </div>
-                </div>
-            `).join('');
-        }
+        window.showToast = (msg) => Swal.fire({toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, icon: 'info', title: msg});
+        window.claimBonus = () => Swal.fire('Bonus', 'You earned 50 points!', 'success');
 
         function initThreeJS() {
-            const container = document.getElementById('coin-container');
-            if(container.children.length > 0) return;
-
+            const cont = document.getElementById('coin-container');
+            if(cont.children.length > 0) return;
             const scene = new THREE.Scene();
-            const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-            
-            renderer.setSize(100, 100);
-            container.appendChild(renderer.domElement);
-
-            const geometry = new THREE.CylinderGeometry(3, 3, 0.4, 32);
-            const material = new THREE.MeshStandardMaterial({ color: 0xFFD700, metalness: 0.8, roughness: 0.2 });
-            const coin = new THREE.Mesh(geometry, material);
-            
-            coin.rotation.x = Math.PI / 2;
-            scene.add(coin);
-
-            const light = new THREE.DirectionalLight(0xffffff, 1);
-            light.position.set(5, 5, 5);
-            scene.add(light);
-            scene.add(new THREE.AmbientLight(0x404040));
-
-            camera.position.z = 8;
-
-            function animate() {
-                requestAnimationFrame(animate);
-                coin.rotation.z += 0.02;
-                coin.rotation.x = (Math.PI / 2) + (Math.sin(Date.now() * 0.002) * 0.3);
-                renderer.render(scene, camera);
-            }
-            animate();
-        }
-
-        window.claimBonus = async () => {
-            const user = auth.currentUser;
-            if(user) {
-                // Real implementation would check date
-                Swal.fire({
-                    title: 'Daily Bonus',
-                    text: 'Congratulations! You received 50 Points',
-                    icon: 'success',
-                    confirmButtonColor: '#FBC02D'
-                });
-            }
+            const cam = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+            const ren = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            ren.setSize(100, 100);
+            cont.appendChild(ren.domElement);
+            const geo = new THREE.CylinderGeometry(3, 3, 0.4, 32);
+            const mat = new THREE.MeshStandardMaterial({ color: 0xFFD700, metalness: 0.8, roughness: 0.2 });
+            const coin = new THREE.Mesh(geo, mat);
+            coin.rotation.x = Math.PI/2; scene.add(coin);
+            const l = new THREE.DirectionalLight(0xffffff, 1); l.position.set(5, 5, 5); scene.add(l); scene.add(new THREE.AmbientLight(0x404040));
+            cam.position.z = 8;
+            function anim() { requestAnimationFrame(anim); coin.rotation.z += 0.02; ren.render(scene, cam); }
+            anim();
         }
     </script>
 </body>
