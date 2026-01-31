@@ -5,11 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Income Impact BD</title>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
@@ -30,19 +27,17 @@
 </head>
 <body>
 
-    <!-- LOADER -->
     <div id="loader" class="fixed inset-0 bg-white z-[999] flex flex-col items-center justify-center">
         <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-yellow-500 mb-4"></div>
         <p class="text-gray-500 text-sm font-medium">Loading System...</p>
     </div>
 
-    <!-- RECAPTCHA -->
     <div id="recaptcha-container"></div>
 
     <!-- AUTH SCREEN -->
     <div id="auth-view" class="fixed inset-0 bg-white z-[200] flex flex-col items-center justify-center p-6 hidden">
         <div class="w-24 h-24 bg-yellow-50 rounded-full flex items-center justify-center mb-6 border-2 border-[#FBC02D]"><img src="https://cdn-icons-png.flaticon.com/512/295/295128.png" class="w-14"></div>
-        <h1 class="text-3xl font-bold text-gray-800 mb-1">Income Impact</h1>
+        <h1 class="text-3xl font-bold text-gray-800 mb-1">Welcome</h1>
         <p class="text-sm text-gray-500 mb-8">Login to continue</p>
 
         <!-- PHONE LOGIN -->
@@ -64,46 +59,22 @@
         </div>
     </div>
 
-    <!-- MAIN APP CONTAINER -->
+    <!-- MAIN APP -->
     <div id="app-container" class="hidden">
         
-        <!-- ADMIN PANEL (ONLY FOR ADMINS) -->
+        <!-- ADMIN PANEL -->
         <div id="view-admin" class="page-view px-4 pt-6 bg-gray-100 min-h-screen">
             <h2 class="text-center font-bold text-xl mb-4 text-red-600">ADMIN PANEL</h2>
-            <div class="grid grid-cols-2 gap-4 mb-6">
-                <div class="bg-white p-4 rounded-xl shadow text-center">
-                    <h3 class="text-2xl font-bold text-blue-600" id="admin-total-users">0</h3>
-                    <p class="text-xs text-gray-500">Total Users</p>
-                </div>
-                <div class="bg-white p-4 rounded-xl shadow text-center">
-                    <h3 class="text-2xl font-bold text-green-600">Active</h3>
-                    <p class="text-xs text-gray-500">System Status</p>
-                </div>
-            </div>
-            <h3 class="font-bold mb-2">User Management</h3>
             <div class="bg-white p-4 rounded-xl shadow mb-4">
+                <h3 class="font-bold mb-2">Send Balance</h3>
                 <input type="email" id="admin-user-email" placeholder="User Email" class="w-full border p-2 rounded mb-2">
                 <input type="number" id="admin-amount" placeholder="Amount" class="w-full border p-2 rounded mb-2">
-                <button onclick="adminAddBalance()" class="w-full bg-green-500 text-white py-2 rounded font-bold">Add Balance</button>
+                <button onclick="adminAddBalance()" class="w-full bg-green-500 text-white py-2 rounded font-bold">Send Money</button>
             </div>
-            <button onclick="navigate('home')" class="w-full bg-gray-800 text-white py-3 rounded-xl mb-2">Back to User View</button>
+            <button onclick="navigate('home')" class="w-full bg-gray-800 text-white py-3 rounded-xl">Back to Home</button>
         </div>
 
-        <!-- LEADER PANEL (ONLY FOR LEADERS) -->
-        <div id="view-leader" class="page-view px-4 pt-6 bg-purple-50 min-h-screen">
-            <h2 class="text-center font-bold text-xl mb-4 text-purple-700">LEADER PANEL</h2>
-            <div class="bg-white p-6 rounded-xl shadow-lg mb-6 text-center">
-                <h3 class="text-3xl font-bold text-purple-600" id="leader-team-count">0</h3>
-                <p class="text-sm text-gray-500">Team Members</p>
-            </div>
-            <h3 class="font-bold mb-2">My Team</h3>
-            <div class="space-y-2" id="leader-team-list">
-                <p class="text-center text-gray-400 text-sm">No members found</p>
-            </div>
-            <button onclick="navigate('home')" class="w-full bg-gray-800 text-white py-3 rounded-xl mt-6">Back to User View</button>
-        </div>
-
-        <!-- HOME (USER) -->
+        <!-- HOME -->
         <div id="view-home" class="page-view active">
             <div class="app-header">
                 <div class="flex justify-between items-center mb-4">
@@ -111,78 +82,57 @@
                         <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-[#FBC02D] font-bold text-xl"><i class="fas fa-user"></i></div>
                         <div><h2 class="font-bold text-lg leading-tight" id="home-name">User</h2><p class="text-[10px] opacity-90" id="home-role">Member</p></div>
                     </div>
-                    <div class="relative"><i class="fas fa-bell text-xl"></i><span class="absolute -top-1 -right-1 bg-red-600 text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center border border-white">1</span></div>
+                    <div class="relative"><i class="fas fa-bell text-xl"></i></div>
                 </div>
                 <div class="bg-white/20 rounded-lg p-2 flex items-center backdrop-blur-sm"><i class="fas fa-bullhorn text-white mr-2"></i><marquee class="text-xs font-medium">Welcome to Income Impact BD. Start Earning!</marquee></div>
             </div>
             
             <div class="px-4 -mt-6 relative z-10 pb-4">
-                <!-- Admin/Leader Buttons -->
-                <div id="special-access" class="flex gap-2 mb-4 hidden">
-                    <button onclick="navigate('admin')" class="flex-1 bg-red-600 text-white py-2 rounded-lg text-xs font-bold shadow hidden" id="btn-admin">ADMIN PANEL</button>
-                    <button onclick="navigate('leader')" class="flex-1 bg-purple-600 text-white py-2 rounded-lg text-xs font-bold shadow hidden" id="btn-leader">LEADER PANEL</button>
+                <!-- Admin Button -->
+                <div id="special-access" class="hidden mb-4">
+                    <button onclick="navigate('admin')" class="w-full bg-red-600 text-white py-2 rounded-lg text-xs font-bold shadow">OPEN ADMIN PANEL</button>
                 </div>
 
-                <div class="flex overflow-x-auto gap-3 hide-scroll mb-5">
-                    <img src="https://via.placeholder.com/300x150/FFB300/FFFFFF?text=Premium+Bonus" class="rounded-xl w-72 shadow-md">
-                    <img src="https://via.placeholder.com/300x150/1a1a1a/FFFFFF?text=Refer+Win" class="rounded-xl w-72 shadow-md">
-                </div>
-
-                <h3 class="font-bold text-gray-800 mb-3 border-l-4 border-[#FBC02D] pl-2">Services</h3>
-                <div class="grid grid-cols-4 gap-3 mb-6">
-                    <div class="bg-white p-2 rounded-xl shadow-sm flex flex-col items-center justify-center" onclick="showToast('Recharge coming soon')"><i class="fas fa-mobile-alt text-blue-500 text-xl mb-1"></i><span class="text-[10px] font-bold text-gray-600">Recharge</span></div>
-                    <div class="bg-white p-2 rounded-xl shadow-sm flex flex-col items-center justify-center" onclick="navigate('tasks')"><i class="fas fa-tasks text-red-500 text-xl mb-1"></i><span class="text-[10px] font-bold text-gray-600">Tasks</span></div>
-                    <div class="bg-white p-2 rounded-xl shadow-sm flex flex-col items-center justify-center" onclick="navigate('shop')"><i class="fas fa-shopping-bag text-green-500 text-xl mb-1"></i><span class="text-[10px] font-bold text-gray-600">Shop</span></div>
-                    <div class="bg-white p-2 rounded-xl shadow-sm flex flex-col items-center justify-center" onclick="claimBonus()"><i class="fas fa-gift text-yellow-500 text-xl mb-1"></i><span class="text-[10px] font-bold text-gray-600">Bonus</span></div>
+                <div class="grid grid-cols-4 gap-3 mb-6 bg-white p-4 rounded-xl shadow">
+                    <div class="flex flex-col items-center" onclick="navigate('tasks')"><i class="fas fa-tasks text-red-500 text-xl mb-1"></i><span class="text-[10px] font-bold">Tasks</span></div>
+                    <div class="flex flex-col items-center" onclick="navigate('wallet')"><i class="fas fa-wallet text-green-500 text-xl mb-1"></i><span class="text-[10px] font-bold">Wallet</span></div>
+                    <div class="flex flex-col items-center" onclick="navigate('shop')"><i class="fas fa-shopping-bag text-blue-500 text-xl mb-1"></i><span class="text-[10px] font-bold">Shop</span></div>
+                    <div class="flex flex-col items-center" onclick="claimBonus()"><i class="fas fa-gift text-yellow-500 text-xl mb-1"></i><span class="text-[10px] font-bold">Bonus</span></div>
                 </div>
             </div>
         </div>
 
         <!-- WALLET -->
-        <div id="view-wallet" class="page-view px-4 pt-6 min-h-screen bg-white">
-            <h2 class="text-center font-bold text-xl mb-4">My Wallet</h2>
+        <div id="view-wallet" class="page-view px-4 pt-6 bg-white min-h-screen">
             <div class="bg-gray-900 rounded-2xl p-6 text-white shadow-xl mb-6 relative overflow-hidden">
-                <div class="absolute -right-5 -top-5 w-24 h-24 bg-white opacity-10 rounded-full blur-xl"></div>
                 <p class="text-sm opacity-70">Balance</p>
                 <h1 class="text-4xl font-bold mt-1">৳ <span id="wallet-balance">0.00</span></h1>
                 <span class="text-xs bg-white/20 px-2 py-1 rounded text-yellow-400 mt-2 inline-block"><i class="fas fa-star"></i> <span id="wallet-points">0</span> Pts</span>
             </div>
-            <div class="grid grid-cols-2 gap-4 mb-6">
-                <button class="bg-green-50 text-green-700 py-3 rounded-xl font-bold shadow-sm border border-green-100">Withdraw</button>
-                <button class="bg-blue-50 text-blue-700 py-3 rounded-xl font-bold shadow-sm border border-blue-100">Convert</button>
-            </div>
+            <button class="w-full bg-green-500 text-white py-3 rounded-xl font-bold shadow mb-4">Withdraw</button>
         </div>
 
         <!-- TASKS -->
         <div id="view-tasks" class="page-view px-4 pt-6">
-            <h2 class="font-bold text-xl mb-4">Tasks</h2>
-            <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-red-500 flex justify-between items-center mb-3">
-                <div class="flex gap-3 items-center"><div class="w-10 h-10 bg-red-50 rounded-full flex justify-center items-center text-red-500"><i class="fab fa-youtube"></i></div><div><h4 class="font-bold text-sm">Watch Video</h4><p class="text-[10px] text-gray-500">60 Seconds</p></div></div>
+            <div class="bg-white p-4 rounded-xl shadow border-l-4 border-red-500 flex justify-between items-center mb-3">
+                <div class="flex gap-3 items-center"><i class="fab fa-youtube text-red-500 text-3xl"></i><div><h4 class="font-bold text-sm">Watch Video</h4><p class="text-[10px] text-gray-500">60 Seconds</p></div></div>
                 <span class="font-bold text-green-600 text-sm">+50 Pts</span>
             </div>
         </div>
 
         <!-- SHOP -->
         <div id="view-shop" class="page-view px-4 pt-6">
-            <h2 class="font-bold text-xl mb-4">Shop</h2>
             <div class="grid grid-cols-2 gap-3">
-                <div class="bg-white p-2 rounded-xl shadow-sm border"><div class="h-32 bg-gray-50 rounded mb-2 flex items-center justify-center"><img src="https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=200" class="h-full object-contain"></div><h4 class="text-xs font-bold">Smart Watch</h4><span class="text-sm font-bold text-[#FBC02D]">৳1200</span></div>
-                <div class="bg-white p-2 rounded-xl shadow-sm border"><div class="h-32 bg-gray-50 rounded mb-2 flex items-center justify-center"><img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200" class="h-full object-contain"></div><h4 class="text-xs font-bold">Headphone</h4><span class="text-sm font-bold text-[#FBC02D]">৳850</span></div>
+                <div class="bg-white p-2 rounded-xl shadow border"><h4 class="text-xs font-bold">Smart Watch</h4><span class="text-sm font-bold text-[#FBC02D]">৳1200</span></div>
             </div>
         </div>
 
         <!-- PROFILE -->
-        <div id="view-profile" class="page-view">
-            <div class="bg-[#FBC02D] pt-10 pb-16 rounded-b-[40px] shadow-lg text-center">
-                <div class="w-24 h-24 bg-white rounded-full mx-auto p-1 mb-3"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="w-full h-full rounded-full object-cover"></div>
-                <h2 class="text-xl font-bold text-white" id="profile-name">Guest</h2>
-                <p class="text-white/80 text-sm" id="profile-email">...</p>
-                <span class="bg-black/20 text-white px-3 py-1 rounded-full text-xs mt-2 inline-block" id="profile-role">Member</span>
-            </div>
-            <div class="px-4 -mt-8 relative z-10 pb-24 space-y-3">
-                <div class="bg-white p-4 rounded-xl shadow-sm flex gap-4 items-center"><i class="fas fa-user-edit text-blue-500 bg-blue-50 p-2 rounded"></i> <span class="flex-1 font-bold text-gray-700 text-sm">Edit Profile</span> <i class="fas fa-chevron-right text-gray-300"></i></div>
-                <div class="bg-white p-4 rounded-xl shadow-sm flex gap-4 items-center" onclick="logout()"><i class="fas fa-sign-out-alt text-red-500 bg-red-50 p-2 rounded"></i> <span class="flex-1 font-bold text-gray-700 text-sm">Logout</span></div>
-            </div>
+        <div id="view-profile" class="page-view px-4 pt-6 text-center">
+            <div class="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-3"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="w-full h-full rounded-full"></div>
+            <h2 class="text-xl font-bold" id="profile-name">User</h2>
+            <p class="text-sm text-gray-500" id="profile-email">...</p>
+            <button onclick="logout()" class="mt-6 bg-red-500 text-white px-6 py-2 rounded-full">Logout</button>
         </div>
     </div>
 
@@ -201,7 +151,7 @@
         import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyCQhQdXUzavx0Y6uXOtJhHPrONb-sncxh4",
+            apiKey: "AIzaSyCkSCLRvZrFy-iR27jkiHANLG7Fjo5ComA",
             authDomain: "income-app-d77b4.firebaseapp.com",
             projectId: "income-app-d77b4",
             storageBucket: "income-app-d77b4.firebasestorage.app",
@@ -214,13 +164,11 @@
         const db = getFirestore(app);
         auth.useDeviceLanguage();
 
-        // --- AUTH & SETUP ---
         window.toggleAuth = (m) => {
             document.getElementById('phone-section').classList.toggle('hidden');
             document.getElementById('email-section').classList.toggle('hidden');
         };
 
-        // LOGIN LOGIC (Phone & Email) - Simplified for brevity
         window.recaptchaVerifier = null;
         window.sendOTP = async () => {
             const phone = document.getElementById('phone-input').value;
@@ -265,7 +213,6 @@
             }
         }
 
-        // --- CORE LOGIC ---
         onAuthStateChanged(auth, async (user) => {
             const loader = document.getElementById('loader');
             if(user) {
@@ -273,21 +220,15 @@
                 onSnapshot(userRef, (doc) => {
                     const d = doc.data();
                     if(d) {
-                        // Update UI
                         ['wallet-balance'].forEach(id => document.getElementById(id).innerText = d.balance.toFixed(2));
                         document.getElementById('wallet-points').innerText = d.points;
                         ['home-name', 'profile-name'].forEach(id => document.getElementById(id).innerText = d.name);
-                        ['home-role', 'profile-role'].forEach(id => document.getElementById(id).innerText = d.role.toUpperCase());
+                        ['home-role'].forEach(id => document.getElementById(id).innerText = d.role.toUpperCase());
                         document.getElementById('profile-email').innerText = d.email;
 
-                        // Role Based Access
                         const specialAccess = document.getElementById('special-access');
-                        const adminBtn = document.getElementById('btn-admin');
-                        const leaderBtn = document.getElementById('btn-leader');
-
-                        specialAccess.classList.remove('hidden');
-                        if(d.role === 'admin') adminBtn.classList.remove('hidden');
-                        if(d.role === 'leader') leaderBtn.classList.remove('hidden');
+                        if(d.role === 'admin') specialAccess.classList.remove('hidden');
+                        else specialAccess.classList.add('hidden');
                     }
                 });
 
@@ -304,11 +245,9 @@
             loader.style.display = 'none';
         });
 
-        // ADMIN FUNCTION
         window.adminAddBalance = async () => {
             const email = document.getElementById('admin-user-email').value;
             const amount = parseFloat(document.getElementById('admin-amount').value);
-            
             const q = query(collection(db, "users"), where("email", "==", email));
             const snap = await getDocs(q);
             
@@ -322,7 +261,6 @@
             }
         };
 
-        // NAVIGATION
         window.navigate = (page) => {
             document.querySelectorAll('.page-view').forEach(el => el.classList.remove('active'));
             document.getElementById('view-' + page).classList.add('active');
@@ -331,10 +269,7 @@
         };
 
         window.logout = () => signOut(auth);
-        window.toggleDrawer = () => document.getElementById('drawer').classList.toggle('open');
-        window.showToast = (msg) => Swal.fire({toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, icon: 'info', title: msg});
         window.claimBonus = () => Swal.fire('Bonus', 'You earned 50 points!', 'success');
-
     </script>
 </body>
 </html>
