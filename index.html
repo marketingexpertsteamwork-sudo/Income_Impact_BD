@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Income Impact BD</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SweetAlert2 (Alerts) -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Three.js (3D Animation) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <style>
+        /* DESIGN SYSTEM - YELLOW THEME */
+        :root {
+            --primary: #FBC02D;
+            --primary-dark: #f57f17;
+            --dark: #1a1a1a;
+        }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f3f4f6;
+            -webkit-tap-highlight-color: transparent;
+            padding-bottom: 80px; /* Space for bottom nav */
+            overflow-x: hidden;
+        }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Animations */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .anim-fade { animation: fadeIn 0.4s ease-out forwards; }
+        
+        .glass-header {
+            background: linear-gradient(180deg, #FBC02D 0%, #F9A825 100%);
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+            box-shadow: 0 4px 20px rgba(251, 192, 45, 0.4);
+        }
+
+        /* 3D Container */
+        #coin-canvas { width: 120px; height: 120px; margin: 0 auto; }
+
+        /* Navigation Active State */
+        .nav-item.active { color: var(--primary); }
+        .nav-item.active i { 
+            transform: translateY(-5px); 
+            filter: drop-shadow(0 4px 6px rgba(251, 192, 45, 0.5));
+        }
+
+        /* Loading Screen */
+        #loader {
+            position: fixed; inset: 0; background: #fff; z-index: 9999;
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
+        }
+        .spinner {
+            width: 50px; height: 50px; border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary); border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <!-- LOADER -->
+    <div id="loader">
+        <div class="spinner mb-4"></div>
+        <h2 class="font-bold text-xl text-gray-800 tracking-wider">INCOME IMPACT</h2>
+    </div>
+
+    <!-- APP CONTAINER -->
+    <div id="app" class="hidden">
+        
+        <!-- ================= AUTH VIEW (LOGIN/REGISTER) ================= -->
+        <div id="view-auth" class="min-h-screen bg-white flex flex-col justify-center p-6 hidden">
+            <div class="text-center mb-8">
+                <div class="w-28 h-28 mx-auto border-4 border-[#FBC02D] rounded-full p-1 mb-4 shadow-xl">
+                    <img src="https://cdn-icons-png.flaticon.com/512/295/295128.png" class="w-full h-full rounded-full object-cover">
+                </div>
+                <h1 class="text-3xl font-black text-gray-800">Welcome</h1>
+                <p class="text-gray-500 text-sm mt-1">Join the largest earning platform</p>
+            </div>
+
+            <form id="authForm" class="space-y-4">
+                <div class="bg-gray-50 p-4 rounded-xl border border-gray-100 flex items-center gap-3 focus-within:border-[#FBC02D] transition">
+                    <i class="fas fa-envelope text-gray-400"></i>
+                    <input type="email" id="email" placeholder="Email Address" class="bg-transparent w-full outline-none font-bold text-gray-700" required>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-xl border border-gray-100 flex items-center gap-3 focus-within:border-[#FBC02D] transition">
+                    <i class="fas fa-lock text-gray-400"></i>
+                    <input type="password" id="password" placeholder="Password (Min 6 chars)" class="bg-transparent w-full outline-none font-bold text-gray-700" required>
+                </div>
+                <button type="submit" class="w-full bg-[#FBC02D] text-white py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transition transform active:scale-[0.98] text-lg uppercase tracking-wide">
+                    Login / Register
+                </button>
+            </form>
+            <p class="text-center text-xs text-gray-400 mt-8">
+                By continuing, you agree to our Terms & Services
+            </p>
+        </div>
+
+        <!-- ================= HOME VIEW ================= -->
+        <div id="view-home" class="hidden">
+            <!-- Header -->
+            <div class="glass-header px-5 pt-8 pb-10 sticky top-0 z-40 text-white">
+                <div class="flex justify-between items-center mb-6">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 bg-white rounded-full overflow-hidden border-2 border-white/50 shadow-md">
+                            <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="w-full h-full object-cover">
+                        </div>
+                        <div>
+                            <p class="text-xs opacity-80">Hello,</p>
+                            <h2 class="font-bold text-lg leading-tight truncate w-32" id="uName">User</h2>
+                        </div>
+                    </div>
+                    <div class="flex gap-4">
+                         <div class="relative bg-white/20 p-2 rounded-full cursor-pointer">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <div class="relative bg-white/20 p-2 rounded-full cursor-pointer">
+                            <i class="fas fa-bell"></i>
+                            <span class="absolute top-0 right-0 bg-red-500 text-[8px] w-3 h-3 rounded-full flex items-center justify-center border border-white">3</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Balance Card Mini -->
+                <div class="bg-white/10 backdrop-blur-md rounded-xl p-4 flex justify-between items-center border border-white/20">
+                    <div>
+                        <p class="text-xs opacity-90">Total Balance</p>
+                        <h3 class="text-2xl font-bold">৳ <span id="mini-balance">0.00</span></h3>
+                    </div>
+                    <button onclick="switchTab('wallet')" class="bg-white text-[#FBC02D] px-4 py-2 rounded-lg text-xs font-bold shadow hover:bg-gray-100">
+                        Add Money
+                    </button>
+                </div>
+            </div>
+
+            <div class="px-4 -mt-6 relative z-10 pb-20">
+                <!-- Slider -->
+                <div class="flex overflow-x-auto gap-4 hide-scroll mb-6 py-2">
+                    <img src="https://via.placeholder.com/320x160/FBC02D/FFFFFF?text=Premium+Bonus" class="rounded-xl w-72 shadow-lg transform hover:scale-105 transition duration-300">
+                    <img src="https://via.placeholder.com/320x160/333333/FFFFFF?text=Refer+&+Earn" class="rounded-xl w-72 shadow-lg transform hover:scale-105 transition duration-300">
+                </div>
+
+                <!-- Services Grid -->
+                <div class="bg-white p-4 rounded-2xl shadow-sm mb-6 anim-fade">
+                    <h3 class="font-bold text-gray-800 mb-4 text-sm uppercase tracking-wide">Services</h3>
+                    <div class="grid grid-cols-4 gap-4">
+                        <div class="flex flex-col items-center justify-center gap-2 active:scale-95 transition cursor-pointer">
+                            <div class="w-12 h-12 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center text-xl shadow-sm"><i class="fas fa-mobile-alt"></i></div>
+                            <span class="text-[10px] font-bold text-gray-600">Recharge</span>
+                        </div>
+                        <div class="flex flex-col items-center justify-center gap-2 active:scale-95 transition cursor-pointer">
+                            <div class="w-12 h-12 bg-purple-50 text-purple-500 rounded-full flex items-center justify-center text-xl shadow-sm"><i class="fas fa-sim-card"></i></div>
+                            <span class="text-[10px] font-bold text-gray-600">Drive</span>
+                        </div>
+                        <div onclick="switchTab('tasks')" class="flex flex-col items-center justify-center gap-2 active:scale-95 transition cursor-pointer">
+                            <div class="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center text-xl shadow-sm"><i class="fas fa-play"></i></div>
+                            <span class="text-[10px] font-bold text-gray-600">Tasks</span>
+                        </div>
+                        <div class="flex flex-col items-center justify-center gap-2 active:scale-95 transition cursor-pointer">
+                            <div class="w-12 h-12 bg-yellow-50 text-yellow-600 rounded-full flex items-center justify-center text-xl shadow-sm"><i class="fas fa-gift"></i></div>
+                            <span class="text-[10px] font-bold text-gray-600">Daily</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Products -->
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-gray-800 text-lg">Popular Products</h3>
+                    <span class="text-xs text-[#FBC02D] font-bold cursor-pointer">See All</span>
+                </div>
+                
+                <div id="products-container" class="grid grid-cols-2 gap-4">
+                    <!-- Products injected by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= WALLET VIEW ================= -->
+        <div id="view-wallet" class="hidden min-h-screen px-4 pt-8 bg-gray-50">
+            <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">My Wallet</h2>
+            
+            <!-- 3D Coin Canvas -->
+            <div id="coin-canvas" class="mb-4"></div>
+
+            <div class="bg-gray-900 rounded-2xl p-6 text-white shadow-2xl mb-6 relative overflow-hidden">
+                <div class="absolute -right-10 -top-10 w-40 h-40 bg-gradient-to-br from-[#FBC02D] to-transparent opacity-20 rounded-full blur-2xl"></div>
+                <p class="text-sm opacity-60 font-medium">Available Balance</p>
+                <h1 class="text-4xl font-black mt-2 tracking-tight">৳ <span id="wallet-balance">0.00</span></h1>
+                <div class="mt-4 flex gap-4 text-xs font-bold">
+                    <span class="bg-white/10 px-3 py-1 rounded-full text-yellow-400"><i class="fas fa-star mr-1"></i> <span id="wallet-points">0</span> Pts</span>
+                    <span class="bg-white/10 px-3 py-1 rounded-full text-green-400"><i class="fas fa-check-circle mr-1"></i> Verified</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mb-8">
+                <button onclick="Swal.fire('Info', 'Withdraw feature coming soon!', 'info')" class="bg-white p-4 rounded-xl shadow-sm flex flex-col items-center justify-center gap-2 border border-gray-100 hover:border-green-400 transition">
+                    <div class="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center"><i class="fas fa-arrow-down"></i></div>
+                    <span class="font-bold text-gray-700 text-sm">Withdraw</span>
+                </button>
+                <button onclick="Swal.fire('Info', 'Convert points to balance!', 'info')" class="bg-white p-4 rounded-xl shadow-sm flex flex-col items-center justify-center gap-2 border border-gray-100 hover:border-blue-400 transition">
+                    <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center"><i class="fas fa-exchange-alt"></i></div>
+                    <span class="font-bold text-gray-700 text-sm">Convert</span>
+                </button>
+            </div>
+            
+            <h3 class="font-bold text-gray-700 mb-4 border-l-4 border-[#FBC02D] pl-2">History</h3>
+            <div class="space-y-3 pb-24">
+                <div class="bg-white p-4 rounded-xl flex justify-between items-center shadow-sm border border-gray-50">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-500 text-lg"><i class="fas fa-gift"></i></div>
+                        <div>
+                            <p class="font-bold text-sm text-gray-800">Daily Bonus</p>
+                            <p class="text-[10px] text-gray-400">Today, 10:00 AM</p>
+                        </div>
+                    </div>
+                    <span class="text-green-600 font-bold text-sm">+50 Pts</span>
+                </div>
+                <!-- More mock history -->
+                <div class="bg-white p-4 rounded-xl flex justify-between items-center shadow-sm border border-gray-50">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-500 text-lg"><i class="fas fa-play"></i></div>
+                        <div>
+                            <p class="font-bold text-sm text-gray-800">Task Reward</p>
+                            <p class="text-[10px] text-gray-400">Yesterday</p>
+                        </div>
+                    </div>
+                    <span class="text-green-600 font-bold text-sm">+10 Pts</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PROFILE VIEW ================= -->
+        <div id="view-profile" class="hidden bg-gray-50 min-h-screen">
+            <div class="bg-white shadow-sm pb-8 rounded-b-[40px] pt-12 relative overflow-hidden">
+                <div class="absolute top-0 w-full h-2 bg-[#FBC02D]"></div>
+                <div class="text-center">
+                    <div class="w-24 h-24 bg-gray-200 rounded-full mx-auto p-1 shadow-md mb-3 border-4 border-white relative">
+                        <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="w-full h-full rounded-full object-cover">
+                        <div class="absolute bottom-0 right-0 bg-green-500 w-6 h-6 rounded-full border-2 border-white"></div>
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-800" id="profileName">Loading...</h2>
+                    <p class="text-gray-500 text-sm" id="profileEmail">...</p>
+                    <div class="mt-4 flex justify-center gap-3">
+                        <span class="bg-[#FBC02D] text-white px-4 py-1 rounded-full text-xs font-bold shadow">Member</span>
+                        <span class="bg-gray-800 text-white px-4 py-1 rounded-full text-xs font-bold shadow">ID: 83721</span>
+                    </div>
+                </div>
+                <button onclick="logout()" class="absolute top-4 right-4 text-red-500 bg-red-50 p-2 rounded-full hover:bg-red-100 transition"><i class="fas fa-power-off"></i></button>
+            </div>
+
+            <div class="px-4 -mt-4 relative z-10 pb-24 space-y-3">
+                <div class="bg-white p-4 rounded-xl shadow-sm flex items-center gap-4 cursor-pointer hover:bg-gray-50 transition">
+                    <div class="w-10 h-10 bg-blue-50 text-blue-500 rounded-lg flex items-center justify-center"><i class="fas fa-user-edit"></i></div>
+                    <span class="font-bold text-gray-700">Edit Profile</span>
+                    <i class="fas fa-chevron-right ml-auto text-gray-300"></i>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm flex items-center gap-4 cursor-pointer hover:bg-gray-50 transition">
+                    <div class="w-10 h-10 bg-purple-50 text-purple-500 rounded-lg flex items-center justify-center"><i class="fas fa-box-open"></i></div>
+                    <span class="font-bold text-gray-700">My Orders</span>
+                    <i class="fas fa-chevron-right ml-auto text-gray-300"></i>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm flex items-center gap-4 cursor-pointer hover:bg-gray-50 transition">
+                    <div class="w-10 h-10 bg-green-50 text-green-500 rounded-lg flex items-center justify-center"><i class="fab fa-whatsapp"></i></div>
+                    <span class="font-bold text-gray-700">Help Center</span>
+                    <i class="fas fa-chevron-right ml-auto text-gray-300"></i>
+                </div>
+                
+                <div class="bg-white p-4 rounded-xl shadow-sm flex items-center gap-4 cursor-pointer hover:bg-gray-50 transition mt-4">
+                    <div class="w-10 h-10 bg-gray-100 text-gray-500 rounded-lg flex items-center justify-center"><i class="fas fa-info-circle"></i></div>
+                    <span class="font-bold text-gray-700">About App</span>
+                    <span class="ml-auto text-xs text-gray-400 font-bold">v1.0.0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= BOTTOM NAV ================= -->
+        <div id="bottom-nav" class="fixed bottom-0 w-full bg-white h-[75px] border-t border-gray-100 flex justify-between items-end px-6 z-50 shadow-[0_-5px_20px_rgba(0,0,0,0.03)] hidden">
+            <button onclick="switchTab('home')" class="nav-item flex-1 flex flex-col items-center pb-4 text-gray-400 transition group" id="nav-home">
+                <i class="fas fa-home text-xl mb-1 transition-transform group-hover:-translate-y-1"></i>
+                <span class="text-[10px] font-bold">Home</span>
+            </button>
+            <button onclick="switchTab('tasks')" class="nav-item flex-1 flex flex-col items-center pb-4 text-gray-400 transition group" id="nav-tasks">
+                <i class="fas fa-layer-group text-xl mb-1 transition-transform group-hover:-translate-y-1"></i>
+                <span class="text-[10px] font-bold">Tasks</span>
+            </button>
+            
+            <div class="relative -top-8">
+                <button onclick="switchTab('wallet')" class="w-16 h-16 bg-gradient-to-r from-[#FBC02D] to-orange-400 rounded-full flex items-center justify-center text-white shadow-xl border-4 border-gray-100 transform transition active:scale-90 hover:shadow-2xl">
+                    <i class="fas fa-wallet text-2xl"></i>
+                </button>
+            </div>
+
+            <button onclick="switchTab('shop')" class="nav-item flex-1 flex flex-col items-center pb-4 text-gray-400 transition group" id="nav-shop">
+                <i class="fas fa-shopping-bag text-xl mb-1 transition-transform group-hover:-translate-y-1"></i>
+                <span class="text-[10px] font-bold">Shop</span>
+            </button>
+            <button onclick="switchTab('profile')" class="nav-item flex-1 flex flex-col items-center pb-4 text-gray-400 transition group" id="nav-profile">
+                <i class="fas fa-user text-xl mb-1 transition-transform group-hover:-translate-y-1"></i>
+                <span class="text-[10px] font-bold">Profile</span>
+            </button>
+        </div>
+
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // YOUR CONFIGURATION INTEGRATED HERE
+        const firebaseConfig = {
+            apiKey: "AIzaSyCQhQdXUzavx0Y6uXOtJhHPrONb-sncxh4",
+            authDomain: "md-ebrahim-dc82c.firebaseapp.com",
+            databaseURL: "https://md-ebrahim-dc82c-default-rtdb.firebaseio.com",
+            projectId: "md-ebrahim-dc82c",
+            storageBucket: "md-ebrahim-dc82c.firebasestorage.app",
+            messagingSenderId: "727897545547",
+            appId: "1:727897545547:web:7988fbaa32d4d4bb6926ce",
+            measurementId: "G-NRFDT42MKZ"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // ================= DATA & UI LOGIC =================
+        const mockProducts = [
+            { id: 1, name: "Smart Watch Ultra", price: 1550, img: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=500" },
+            { id: 2, name: "Wireless Earbuds", price: 950, img: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=500" },
+            { id: 3, name: "Gaming Mouse", price: 650, img: "https://images.unsplash.com/photo-1527814050087-3793815479db?w=500" },
+            { id: 4, name: "Power Bank 20k", price: 1850, img: "https://images.unsplash.com/photo-1609592425026-64195156642d?w=500" }
+        ];
+
+        window.switchTab = (tabId) => {
+            ['home', 'wallet', 'profile', 'auth', 'tasks', 'shop'].forEach(id => {
+                const el = document.getElementById('view-' + id);
+                if(el) el.classList.add('hidden');
+            });
+
+            const target = document.getElementById('view-' + tabId);
+            if(target) target.classList.remove('hidden');
+
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            const navBtn = document.getElementById('nav-' + tabId);
+            if(navBtn) navBtn.classList.add('active');
+
+            if(tabId === 'home') loadProducts();
+            if(tabId === 'wallet') initThreeJS();
+        }
+
+        function loadProducts() {
+            const container = document.getElementById('products-container');
+            container.innerHTML = mockProducts.map(p => `
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden group anim-fade border border-gray-100">
+                    <div class="h-32 bg-gray-100 relative">
+                        <img src="${p.img}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                        <span class="absolute top-2 left-2 bg-red-500 text-white text-[10px] px-2 py-0.5 rounded font-bold">HOT</span>
+                    </div>
+                    <div class="p-3">
+                        <h4 class="font-bold text-gray-700 text-xs line-clamp-1 mb-1">${p.name}</h4>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-extrabold text-[#FBC02D]">৳${p.price}</span>
+                            <button class="w-7 h-7 rounded-full bg-gray-900 text-white flex items-center justify-center shadow hover:bg-[#FBC02D] transition">
+                                <i class="fas fa-plus text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function initThreeJS() {
+            const container = document.getElementById('coin-canvas');
+            if(container.children.length > 0) return;
+
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            
+            renderer.setSize(120, 120);
+            container.appendChild(renderer.domElement);
+
+            const geometry = new THREE.CylinderGeometry(2.5, 2.5, 0.3, 32);
+            const material = new THREE.MeshStandardMaterial({ color: 0xFFD700, metalness: 0.8, roughness: 0.2 });
+            const coin = new THREE.Mesh(geometry, material);
+            
+            coin.rotation.x = Math.PI / 2;
+            scene.add(coin);
+
+            const light = new THREE.PointLight(0xffffff, 2, 100);
+            light.position.set(5, 5, 5);
+            scene.add(light);
+            const ambient = new THREE.AmbientLight(0x404040);
+            scene.add(ambient);
+
+            camera.position.z = 6;
+
+            function animate() {
+                requestAnimationFrame(animate);
+                coin.rotation.z += 0.01;
+                coin.rotation.x = (Math.PI / 2) + (Math.sin(Date.now() * 0.002) * 0.2);
+                renderer.render(scene, camera);
+            }
+            animate();
+        }
+
+        // ================= AUTH LOGIC =================
+        const authForm = document.getElementById('authForm');
+        
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            Swal.fire({ title: 'Processing...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                Swal.close();
+            } catch (error) {
+                if(error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential' || error.code === 'auth/invalid-login-credentials') {
+                     try {
+                        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                        await setDoc(doc(db, "users", userCredential.user.uid), {
+                            name: email.split('@')[0],
+                            email: email,
+                            balance: 0,
+                            points: 50,
+                            role: "member",
+                            createdAt: new Date().toISOString()
+                        });
+                        Swal.fire('Success', 'Account Created!', 'success');
+                     } catch (regError) {
+                         Swal.fire('Error', regError.message, 'error');
+                     }
+                } else {
+                    Swal.fire('Error', error.message, 'error');
+                }
+            }
+        });
+
+        onAuthStateChanged(auth, async (user) => {
+            const loader = document.getElementById('loader');
+            const app = document.getElementById('app');
+            const bottomNav = document.getElementById('bottom-nav');
+            
+            setTimeout(() => loader.style.display = 'none', 500); // Simulate smooth load
+            app.classList.remove('hidden');
+
+            if (user) {
+                try {
+                    const userDoc = await getDoc(doc(db, "users", user.uid));
+                    if (userDoc.exists()) {
+                        const userData = userDoc.data();
+                        document.getElementById('uName').innerText = userData.name;
+                        document.getElementById('profileName').innerText = userData.name;
+                        document.getElementById('uEmail').innerText = userData.email;
+                        document.getElementById('profileEmail').innerText = userData.email;
+                        document.getElementById('wallet-balance').innerText = (userData.balance || 0).toFixed(2);
+                        document.getElementById('mini-balance').innerText = (userData.balance || 0).toFixed(2);
+                        document.getElementById('wallet-points').innerText = userData.points || 0;
+                    }
+                } catch(e) { console.error("Error fetching user data", e); }
+
+                document.getElementById('view-auth').classList.add('hidden');
+                switchTab('home');
+                bottomNav.classList.remove('hidden');
+                bottomNav.classList.add('flex');
+            } else {
+                switchTab('auth');
+                bottomNav.classList.add('hidden');
+                bottomNav.classList.remove('flex');
+            }
+        });
+
+        window.logout = () => {
+            Swal.fire({
+                title: 'Logout?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Yes'
+            }).then((result) => {
+                if (result.isConfirmed) signOut(auth);
+            });
+        };
+    </script>
+</body>
+</html>
